@@ -11,18 +11,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Body parser
-app.use(express.urlencoded({ extended: true }));
-
-// Static files
+app.use(express.urlencoded({ extended: true })); // Body parser
 const publicPath = path.join(process.cwd(), "public");
-app.use(express.static(publicPath));
-
-// View engine
+app.use(express.static(publicPath)); // Static files
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
-
-// Session
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret",
@@ -30,18 +23,21 @@ app.use(
     saveUninitialized: false
   })
 );
-
-// Request logging
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();
 });
 
-// Routes
+// Terms and Conditions page
+app.get("/terms", (req, res) => {
+  res.render("terms", { title: "Terms and Conditions", username: req.session.user ? req.session.user.username : undefined });
+});
+
+// Auth and environment routes
 app.use("/", authRoutes);
 app.use("/environments", environmentRoutes);
 
-// Root handler
+// Home (hero)
 app.get("/", (req, res) => {
   if (req.session.user) return res.redirect("/dashboard");
   const user = req.session.user as undefined | { id: number; username: string };
@@ -54,7 +50,7 @@ app.get("/dashboard", (req, res) => {
   res.render("dashboard", { title: "Dashboard", username: req.session.user.username });
 });
 
-// Database connect & start
+// Database 
 pool.getConnection()
   .then(() => {
     console.log("✅ Connected to MySQL database");

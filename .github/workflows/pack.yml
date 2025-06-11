@@ -1,4 +1,4 @@
-name: Release and Deploy
+name: Release
 
 on:
   workflow_dispatch:
@@ -7,12 +7,9 @@ on:
         description: 'Release type (patch, minor, major)'
         required: true
         default: 'patch'
-  workflow_call:
-  # Or trigger on a custom action, e.g. "pack"
-  # You can also add: on: push: tags: - 'v*.*.*'
 
 jobs:
-  release-deploy:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,30 +44,6 @@ jobs:
           git push --follow-tags origin ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build project
-        run: npm run build
-
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          source: "build/*"
-          target: "/path/to/your/web/root"
-
-      - name: Restart server (optional)
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          script: |
-            cd /path/to/your/web/root
-            pm2 restart server # or your process manager command
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

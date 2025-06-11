@@ -1,3 +1,42 @@
+.fly-in-text.fly-h1 {
+  font-size: 1.4em;
+  color: var(--bs-light, #fff);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+/* Flying text for hero, small and inline */
+.fly-in-text {
+  list-style: none;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 0.5rem auto;
+  padding: 0;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  font-family: 'Geist Mono', 'Nunito', monospace, Arial, sans-serif;
+  font-weight: 500;
+  color: #999;
+}
+.fly-in-text li {
+  display: inline-block;
+  margin-right: 0.08em;
+  opacity: 1;
+  transition: all 1.2s cubic-bezier(.19,1,.22,1);
+}
+.fly-in-text li:last-child {
+  margin-right: 0;
+}
+.fly-in-text.hidden li {
+  opacity: 0;
+}
+.fly-in-text.hidden li:nth-child(1) { transform: translateX(-40px) translateY(-20px); }
+.fly-in-text.hidden li:nth-child(2) { transform: translateX(10px) translateY(20px); }
+.fly-in-text.hidden li:nth-child(3) { transform: translateX(-30px) translateY(-10px); }
+.fly-in-text.hidden li:nth-child(4) { transform: translateX(10px) translateY(-20px); }
+.fly-in-text.hidden li:nth-child(5) { transform: translateX(-60px) translateY(20px); }
+.fly-in-text.hidden li:nth-child(6) { transform: translateX(10px) translateY(-10px); }
+.fly-in-text.hidden li:nth-child(7) { transform: translateX(20px) translateY(20px); }
 html, body {
   width: 100%;
   min-height: 100vh;

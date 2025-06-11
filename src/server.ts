@@ -44,7 +44,8 @@ app.use("/environments", environmentRoutes);
 // Root handler
 app.get("/", (req, res) => {
   if (req.session.user) return res.redirect("/dashboard");
-  res.redirect("/login");
+  const user = req.session.user as undefined | { id: number; username: string };
+  res.render("hero", { title: "Home", username: user ? user.username : undefined });
 });
 
 // Dashboard

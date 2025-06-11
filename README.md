@@ -133,4 +133,4 @@ An interactive roleplay environment platform where users can create, join, and m
 
 ## 📜 License
 
-[MIT](LICENSE) © Your Name
+[MIT](LICENSE) © Mundstock

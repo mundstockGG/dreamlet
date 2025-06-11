@@ -39,7 +39,6 @@ app.use("/environments", environmentRoutes);
 
 // Home (hero)
 app.get("/", (req, res) => {
-  if (req.session.user) return res.redirect("/dashboard");
   const user = req.session.user as undefined | { id: number; username: string };
   res.render("hero", { title: "Home", username: user ? user.username : undefined });
 });

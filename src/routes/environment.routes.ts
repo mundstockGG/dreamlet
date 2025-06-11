@@ -5,7 +5,12 @@ import {
   joinEnvironment,
   leaveEnvironment,
   getManageEnvironment,
-  postCreatePlace
+  postCreatePlace,
+  toggleEnvironmentLock,
+  promoteUser,
+  kickUser,
+  banUser,
+  muteUser
 } from '../controllers/environment.controller';
 import { ensureAuth } from '../middlewares/auth.middleware';
 
@@ -18,5 +23,11 @@ router.post('/join', joinEnvironment);
 router.post('/:id/leave', leaveEnvironment);
 router.get('/:id', getManageEnvironment);
 router.post('/:id/places/create', postCreatePlace);
+router.post('/:id/lock', toggleEnvironmentLock);
+// Member moderation (owners only)
+router.post('/:id/members/:memberId/promote', promoteUser);
+router.post('/:id/members/:memberId/kick',    kickUser);
+router.post('/:id/members/:memberId/ban',     banUser);
+router.post('/:id/members/:memberId/mute',    muteUser);
 
 export default router;

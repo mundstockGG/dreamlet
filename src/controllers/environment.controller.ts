@@ -68,3 +68,54 @@ export async function postCreatePlace(req: Request, res: Response) {
     res.render('environment', { title: `Manage: ${env?.name}`, username: req.session.user!.username, env, members, places, error: err.message });
   }
 }
+
+// ─── Environment Lock ──────────────────────────────────────
+export async function toggleEnvironmentLock(req: Request, res: Response) {
+  const envId  = Number(req.params.id);
+  const userId = req.session.user!.id;
+  const env    = await envService.getEnvironmentById(envId);
+  if (!env || env.ownerId !== userId) return res.status(403).send('Unauthorized');
+  await envService.updateLockState(envId, !env.isLocked);
+  res.redirect(`/environments/${envId}`);
+}
+
+// ─── Member Moderation ─────────────────────────────────────
+export async function promoteUser(req: Request, res: Response) {
+  const envId    = Number(req.params.id);
+  const ownerId  = req.session.user!.id;
+  const memberId = Number(req.params.memberId);
+  const env      = await envService.getEnvironmentById(envId);
+  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
+  await envService.promoteMember(envId, memberId);
+  res.redirect(`/environments/${envId}`);
+}
+
+export async function kickUser(req: Request, res: Response) {
+  const envId    = Number(req.params.id);
+  const ownerId  = req.session.user!.id;
+  const memberId = Number(req.params.memberId);
+  const env      = await envService.getEnvironmentById(envId);
+  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
+  await envService.kickMember(envId, memberId);
+  res.redirect(`/environments/${envId}`);
+}
+
+export async function banUser(req: Request, res: Response) {
+  const envId    = Number(req.params.id);
+  const ownerId  = req.session.user!.id;
+  const memberId = Number(req.params.memberId);
+  const env      = await envService.getEnvironmentById(envId);
+  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
+  await envService.banMember(envId, memberId);
+  res.redirect(`/environments/${envId}`);
+}
+
+export async function muteUser(req: Request, res: Response) {
+  const envId    = Number(req.params.id);
+  const ownerId  = req.session.user!.id;
+  const memberId = Number(req.params.memberId);
+  const env      = await envService.getEnvironmentById(envId);
+  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
+  await envService.toggleMuteMember(envId, memberId);
+  res.redirect(`/environments/${envId}`);
+}

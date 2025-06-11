@@ -46,6 +46,68 @@ export async function createEnvironment(data: NewEnv) {
   );
 }
 
+// Toggle environment lock
+export async function updateLockState(envId: number, isLocked: boolean) {
+  await pool.execute(
+    `UPDATE environments
+       SET is_locked = ?
+     WHERE id = ?`,
+    [isLocked ? 1 : 0, envId]
+  );
+}
+
+// Promote a member to moderator
+export async function promoteMember(envId: number, userId: number) {
+  await pool.execute(
+    `UPDATE environment_members
+       SET role = 'moderator'
+     WHERE environment_id = ? AND user_id = ?`,
+    [envId, userId]
+  );
+}
+
+// Kick a member (remove)
+export async function kickMember(envId: number, userId: number) {
+  await pool.execute(
+    `DELETE FROM environment_members
+     WHERE environment_id = ? AND user_id = ?`,
+    [envId, userId]
+  );
+}
+
+// Ban a member (kick + record)
+export async function banMember(envId: number, userId: number) {
+  // remove membership
+  await kickMember(envId, userId);
+  // record ban
+  await pool.execute(
+    `INSERT IGNORE INTO environment_bans
+       (environment_id, user_id)
+     VALUES (?, ?)`,
+    [envId, userId]
+  );
+}
+
+// Toggle mute on a member
+export async function toggleMuteMember(envId: number, userId: number) {
+  await pool.execute(
+    `UPDATE environment_members
+       SET is_muted = NOT is_muted
+     WHERE environment_id = ? AND user_id = ?`,
+    [envId, userId]
+  );
+}
+
+// Prevent banned users from rejoining
+export async function isUserBanned(envId: number, userId: number) {
+  const [rows] = await pool.execute<any[]>(
+    `SELECT 1 FROM environment_bans WHERE environment_id = ? AND user_id = ?`,
+    [envId, userId]
+  );
+  return rows.length > 0;
+}
+
+// In joinEnvironment, check for ban before inserting
 export async function joinEnvironment(userId: number, inviteCode: string) {
   const [rows] = await pool.execute<any[]>(
     'SELECT id, is_locked FROM environments WHERE invite_code = ?',
@@ -54,6 +116,9 @@ export async function joinEnvironment(userId: number, inviteCode: string) {
   const env = rows[0];
   if (!env) throw new Error('Invalid invite code');
   if (env.is_locked) throw new Error('This environment is locked');
+  if (await isUserBanned(env.id, userId)) {
+    throw new Error('You are banned from this environment');
+  }
   const [members] = await pool.execute<any[]>(
     'SELECT 1 FROM environment_members WHERE user_id = ? AND environment_id = ?',
     [userId, env.id]
@@ -86,6 +151,7 @@ export async function getEnvironmentById(envId: number) {
   const [rows] = await pool.execute<any[]>(
     `SELECT 
        id, name,
+       owner_id AS ownerId,
        is_nsfw   AS isNSFW,
        is_locked AS isLocked,
        invite_code AS inviteCode,

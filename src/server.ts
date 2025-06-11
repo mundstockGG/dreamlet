@@ -49,6 +49,26 @@ app.get("/dashboard", (req, res) => {
   res.render("dashboard", { title: "Dashboard", username: req.session.user.username });
 });
 
+// Pricing
+app.get("/pricing", (req, res) => {
+  res.render("pricing", { title: "Pricing", username: req.session.user ? req.session.user.username : undefined });
+});
+
+// News
+app.get("/news", (req, res) => {
+  res.render("news", { title: "News", username: req.session.user ? req.session.user.username : undefined });
+});
+
+// Contact
+app.get("/contact", (req, res) => {
+  res.render("contact", { title: "Contact", username: req.session.user ? req.session.user.username : undefined });
+});
+
+// Changelog
+app.get("/changelog", (req, res) => {
+  res.render("changelog", { title: "Changelog", username: req.session.user ? req.session.user.username : undefined });
+});
+
 // Database 
 pool.getConnection()
   .then(() => {

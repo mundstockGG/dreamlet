@@ -32,5 +32,5 @@ export const postRegister = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  req.session.destroy(() => res.redirect('/login'));
+  req.session.destroy(() => res.redirect('/'));
 };

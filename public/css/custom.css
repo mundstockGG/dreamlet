@@ -514,3 +514,62 @@ a:hover {
     display: flex;
     flex-direction: column;
 }
+
+/* ─── RESPONSIVE ENHANCEMENTS ───────────────────────────── */
+@media (max-width: 767.98px) {
+  .container, .terms-container {
+    max-width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .row {
+    flex-direction: column !important;
+    gap: 1.5rem;
+  }
+  .card, .env-card, .login-container, .register-container {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .page-content, .hero-content {
+    margin-top: 1.2rem;
+    padding: 0.5rem 0;
+  }
+  h1, .display-4 {
+    font-size: 2rem;
+  }
+  .card-title {
+    font-size: 1.2rem;
+  }
+  .footer {
+    font-size: 0.95rem;
+    padding: 1rem 0.5rem;
+  }
+  .navbar-nav {
+    text-align: left;
+  }
+  .form-control, textarea {
+    font-size: 1rem;
+  }
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .container, .terms-container {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+  h1, .display-4 {
+    font-size: 1.3rem;
+  }
+  .card-title {
+    font-size: 1rem;
+  }
+  .footer {
+    font-size: 0.9rem;
+  }
+}

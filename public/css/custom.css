@@ -1,3 +1,55 @@
+.terms-article h1 {
+  font-size: 1.7rem;
+}
+.terms-article h2 {
+  font-size: 1.15rem;
+}
+.terms-article h3 {
+  font-size: 1rem;
+}
+.terms-container {
+  font-family: 'Geist', Arial, Helvetica, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+.terms-article {
+  background: rgba(20,20,20,0.97);
+  border-radius: 16px;
+  box-shadow: 0 2px 24px 0 #00000022;
+  padding: 2.5rem 2rem 2rem 2rem;
+}
+.terms-article h1, .terms-article h2, .terms-article h3 {
+  font-family: 'Geist Mono', 'Nunito', monospace, sans-serif;
+  font-weight: 700;
+}
+.terms-article ul {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+.terms-article li {
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+.terms-article p, .terms-article pre, .terms-article li {
+  font-size: 0.98rem;
+}
+.terms-article pre {
+  font-family: 'Geist Mono', 'Nunito', monospace, sans-serif;
+  background: #18191b;
+  color: #FCFCFC;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+.terms-article a {
+  color: #6ec1e4;
+  text-decoration: underline;
+}
+.terms-article a:hover {
+  color: #FCFCFC;
+}
 .hero {
     min-height: 80vh;
     display: flex;

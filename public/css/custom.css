@@ -1,10 +1,104 @@
+.hero {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+/* Use Geist Mono for secondary, subtitle, span, and small texts */
+.geist-mono,
+small,
+span,
+.subtitle,
+.secondary,
+.text-secondary,
+.text-muted {
+    font-family: 'Geist Mono', 'Nunito', monospace, sans-serif !important;
+}
+
+body,
+.geist-text {
+    font-family: 'Geist', Arial, Helvetica, sans-serif !important;
+}
+
+.navbar-geist .nav-link,
+.navbar-geist.nav-link {
+    color: #999999 !important;
+    transition: color 0.2s;
+}
+
+.navbar-geist .nav-link:hover,
+.navbar-geist.nav-link:hover {
+    color: #FCFCFC !important;
+}
+
+/* Center login/register containers on their pages */
+.login-container,
+.register-container {
+    max-width: 400px;
+    margin: 0 auto;
+    margin-top: 64px;
+    background: rgba(20, 20, 20, 0.97);
+    border-radius: 12px;
+    box-shadow: 0 2px 24px 0 #00000033;
+    padding: 2.5rem 2rem 2rem 2rem;
+}
+
+.header-armata .nav-link,
+.header-armata.nav-link {
+    color: #999999 !important;
+    transition: color 0.2s;
+}
+
+.header-armata .nav-link:hover,
+.header-armata.nav-link:hover {
+    color: #FCFCFC !important;
+}
+
+@font-face {
+    font-family: 'Armata';
+    src: url('/fonts/Armata-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.navbar-geist {
+    font-family: 'Geist Mono', 'Nunito', monospace, sans-serif !important;
+}
+
 /* Custom Bootstrap Styles for Grok-Inspired Black and White Theme */
 body {
     background-color: #0f1012;
     color: #FCFCFC;
     min-height: 100vh;
     margin: 0;
-    padding-top: 64px; /* Offset for fixed 64px navbar */
+    padding-top: 64px;
+    /* Offset for fixed 64px navbar */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
     display: flex;
     flex-direction: column;
@@ -29,9 +123,12 @@ nav.navbar {
     background-color: #0f1012;
     border-bottom: 1px solid #333333;
     position: fixed;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
-    padding: 0; /* remove default nav padding */
+    padding: 0;
+    /* remove default nav padding */
 }
 
 /* ─── INNER CONTAINER LAYOUT ─────────────────────────────── */
@@ -39,8 +136,10 @@ nav.navbar .container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 64px;       /* desktop nav height */
-    padding: 0 2rem;    /* match your content gutters */
+    height: 64px;
+    /* desktop nav height */
+    padding: 0 2rem;
+    /* match your content gutters */
     margin-top: 0;
 }
 
@@ -60,6 +159,7 @@ nav.navbar .container {
     font-weight: 400;
     transition: color 0.2s;
 }
+
 .navbar-nav .nav-link:hover {
     color: #cccccc;
 }
@@ -68,6 +168,7 @@ nav.navbar .container {
     border-color: #FCFCFC;
     padding: 0.25rem 0.5rem;
 }
+
 .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(252,252,252,1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
@@ -78,10 +179,12 @@ nav.navbar .container {
 
 /* ─── DEFAULT MOBILE OVERRIDES ───────────────────────────── */
 @media (max-width: 991.98px) {
+
     /* shrink offset for smaller nav */
     body {
         padding-top: 56px;
     }
+
     nav.navbar .container {
         height: 56px;
         padding: 0 1rem;
@@ -99,20 +202,24 @@ nav.navbar .container {
         padding: 0.5rem;
         margin-top: 0.25rem;
     }
+
     .navbar-nav .nav-item {
         margin-bottom: 0.25rem;
         text-align: right;
     }
+
     .navbar-brand {
         margin-left: 0.25rem;
     }
+
     .navbar-collapse {
         width: 100%;
     }
 }
 
 /* ─── LOGIN / REGISTER PANEL ─────────────────────────────── */
-.login-container, .register-container {
+.login-container,
+.register-container {
     background-color: #0f1012;
     padding: 1.5rem;
     border-radius: 8px;
@@ -120,11 +227,13 @@ nav.navbar .container {
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: box-shadow 0.2s;
 }
-.login-container:hover, .register-container:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+
+.login-container:hover,
+.register-container:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ─── FORM ELEMENTS ──────────────────────────────────────── */
@@ -135,6 +244,7 @@ nav.navbar .container {
     border-radius: 4px;
     padding: 0.5rem;
 }
+
 .form-control:focus {
     background-color: #1a1a1a;
     border-color: #FCFCFC;
@@ -148,24 +258,29 @@ nav.navbar .container {
     padding: 0.5rem 1rem;
     transition: background-color 0.2s, color 0.2s;
 }
+
 .btn-primary {
     background-color: #FCFCFC;
     border-color: #FCFCFC;
     color: #0f1012;
 }
+
 .btn-primary:hover {
     background-color: #e0e0e0;
     border-color: #e0e0e0;
     color: #0f1012;
 }
+
 .btn-secondary {
     background-color: #333333;
     border-color: #333333;
     color: #FCFCFC;
 }
+
 .btn-secondary:hover {
     background-color: #444444;
 }
+
 .btn-place-action {
     background-color: #FCFCFC;
     border: 1px solid #0f1012;
@@ -173,7 +288,9 @@ nav.navbar .container {
     margin-right: 0.25rem;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
-.btn-place-action:hover, .btn-place-action:focus {
+
+.btn-place-action:hover,
+.btn-place-action:focus {
     background-color: #e0e0e0;
     color: #0f1012;
     border-color: #0f1012;
@@ -183,16 +300,20 @@ nav.navbar .container {
 .form-label {
     color: #FCFCFC;
 }
+
 .text-danger {
     color: #ff6666 !important;
 }
+
 .text-muted {
     color: #999999 !important;
 }
+
 a {
     color: #FCFCFC;
     text-decoration: none;
 }
+
 a:hover {
     color: #e0e0e0;
 }
@@ -201,7 +322,7 @@ a:hover {
     background-color: #0f1012;
     border: 1px solid #333333;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: box-shadow 0.2s;
     flex: 1 1 auto;
     display: flex;
@@ -209,12 +330,16 @@ a:hover {
     justify-content: stretch;
     height: 100%;
 }
+
 .card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
-.card-header, .card-title {
+
+.card-header,
+.card-title {
     color: #FCFCFC;
 }
+
 .card-body {
     padding: 1rem;
     flex: 1 1 auto;
@@ -224,7 +349,7 @@ a:hover {
 }
 
 .env-card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     margin-bottom: 1rem;
     padding: 1rem;
     transition: box-shadow 0.2s;
@@ -232,8 +357,9 @@ a:hover {
     border: 1px solid #333333;
     border-radius: 8px;
 }
+
 .env-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .modal-content {
@@ -241,13 +367,17 @@ a:hover {
     border-radius: 8px;
     padding: 1rem;
 }
-.modal-header, .modal-title {
+
+.modal-header,
+.modal-title {
     color: #FCFCFC;
 }
+
 .modal-footer .btn {
     background-color: #333333;
     color: #FCFCFC;
 }
+
 .modal-footer .btn:hover {
     background-color: #444444;
 }
@@ -256,6 +386,7 @@ a:hover {
     display: flex;
     flex-wrap: wrap;
 }
+
 .col-md-6 {
     display: flex;
     flex-direction: column;

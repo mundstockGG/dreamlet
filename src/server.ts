@@ -1,0 +1,65 @@
+import express from "express";
+import path from "path";
+import dotenv from "dotenv";
+import session from "express-session";
+import authRoutes from "./routes/auth.routes";
+import environmentRoutes from "./routes/environment.routes";
+import pool from "./models/db.model";
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Body parser
+app.use(express.urlencoded({ extended: true }));
+
+// Static files
+const publicPath = path.join(process.cwd(), "public");
+app.use(express.static(publicPath));
+
+// View engine
+app.set("view engine", "ejs");
+app.set("views", path.join(process.cwd(), "src", "views"));
+
+// Session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false
+  })
+);
+
+// Request logging
+app.use((req, res, next) => {
+  console.log("Request:", req.method, req.originalUrl);
+  next();
+});
+
+// Routes
+app.use("/", authRoutes);
+app.use("/environments", environmentRoutes);
+
+// Root handler
+app.get("/", (req, res) => {
+  if (req.session.user) return res.redirect("/dashboard");
+  res.redirect("/login");
+});
+
+// Dashboard
+app.get("/dashboard", (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+  res.render("dashboard", { title: "Dashboard", username: req.session.user.username });
+});
+
+// Database connect & start
+pool.getConnection()
+  .then(() => {
+    console.log("✅ Connected to MySQL database");
+    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+  })
+  .catch(err => {
+    console.error("❌ DB connection error:", err);
+    process.exit(1);
+  });

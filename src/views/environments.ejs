@@ -1,0 +1,94 @@
+<%- include('partials/header', { title: 'My Environments', username }) %>
+
+<div class="container page-content">
+  <h4 class="mb-4">My Environments</h4>
+  <% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <div class="row">
+    <% if (environments.length === 0) { %>
+    <p>You have no environments yet.</p>
+    <% } else { %>
+    <% environments.forEach(env => { %>
+    <div class="col-12 col-md-6 mb-3">
+      <div class="card env-card">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">
+            <%= env.name %>
+            <% if (env.isNSFW) { %>
+            <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="NSFW: This environment is not safe for work.
+It is intended for adults and may contain mature, explicit, or sensitive content.
+Please join only if you are of legal age and comfortable with adult themes."></i>
+            <% } else { %>
+            <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="SFW: This environment is safe for work.
+Only general, non-explicit, and family-friendly roleplay is allowed.
+Mature or adult content is strictly prohibited."></i>
+            <% } %>
+          </h5>
+          <p class="text-secondary small">
+            Invite Code: <strong><%= env.inviteCode %></strong>
+          </p>
+          <% if (env.tags && env.tags.length) { %>
+          <p class="text-secondary small">
+            Tags: <%= JSON.parse(env.tags).join(', ') %>
+          </p>
+          <% } %>
+          <div class="mt-auto">
+            <a href="/environments/<%= env.id %>" class="btn btn-secondary btn-sm">
+              Manage
+            </a>
+            <form action="/environments/<%= env.id %>/leave" method="POST" style="display:inline-block; margin-left:0.5rem;">
+              <button class="btn btn-danger btn-sm" type="submit" <%= env.isOwner 
+                        ? 'disabled title="Owners cannot leave their own environment"' 
+                        : '' %>>
+                <i class="bi bi-door-open me-1"></i>Leave
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+    <% } %>
+  </div>
+
+  <!-- Create and Join buttons -->
+  <div class="mt-3">
+    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createEnvModal">
+      <i class="bi bi-plus-lg me-1"></i>Create New
+    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinEnvModal">
+      <i class="bi bi-people-fill me-1"></i>Join Environment
+    </button>
+  </div>
+
+  <!-- Create Environment Modal (your existing markup) -->
+  <div class="modal fade" id="createEnvModal" tabindex="-1" aria-hidden="true">
+    <!-- … -->
+  </div>
+
+  <!-- NEW: Join Environment Modal -->
+  <div class="modal fade" id="joinEnvModal" tabindex="-1" aria-labelledby="joinEnvModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="joinEnvModalLabel">Join Environment</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/environments/join" method="POST">
+            <div class="mb-3">
+              <label for="inviteCode" class="form-label">Invite Code</label>
+              <input type="text" class="form-control bg-secondary text-light border-0" id="inviteCode" name="inviteCode" placeholder="Enter code" required>
+            </div>
+            <button type="submit" class="btn btn-success">Join</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

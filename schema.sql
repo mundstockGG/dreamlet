@@ -1,0 +1,43 @@
+-- USERS
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ENVIRONMENTS
+CREATE TABLE environments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  is_nsfw BOOLEAN DEFAULT FALSE,
+  owner_id INT,
+  is_locked BOOLEAN DEFAULT FALSE,
+  invite_code VARCHAR(8) UNIQUE,
+  tags JSON DEFAULT '[]',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ENVIRONMENT MEMBERS
+CREATE TABLE environment_members (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  environment_id INT,
+  role VARCHAR(20) DEFAULT 'member',
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE
+);
+
+-- PLACES
+CREATE TABLE places (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  environment_id INT,
+  name VARCHAR(100) NOT NULL,
+  emoji VARCHAR(10),
+  is_locked BOOLEAN DEFAULT FALSE,
+  parent_id INT,
+  FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_id) REFERENCES places(id) ON DELETE SET NULL
+);

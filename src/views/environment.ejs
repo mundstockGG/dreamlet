@@ -1,0 +1,183 @@
+<%- include('partials/header', { title, username }) %>
+<div class="container page-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <%= env.name %>
+            <% if (env.isNSFW) { %>
+                <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="NSFW: This environment is not safe for work.\nIt is intended for adults and may contain mature, explicit, or sensitive content.\nPlease join only if you are of legal age and comfortable with adult themes."></i>
+            <% } else { %>
+                <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="SFW: This environment is safe for work.\nOnly general, non-explicit, and family-friendly roleplay is allowed.\nMature or adult content is strictly prohibited."></i>
+            <% } %>
+        </h4>
+        <form action="/environments/<%= env.id %>/lock" method="POST" class="ms-3 d-flex align-items-center">
+            <label class="form-check form-switch mb-0" title="Lock or unlock this environment">
+                <input class="form-check-input" type="checkbox" name="isLocked" onchange="this.form.submit()" <%= env.isLocked ? 'checked' : '' %>>
+                <span class="ms-2">Lock Environment</span>
+            </label>
+        </form>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p class="text-secondary small">Invite Code: <strong><%= env.inviteCode || '— none —' %></strong></p>
+            <p class="text-secondary small">Locked: <strong><%= env.isLocked ? 'Yes' : 'No' %></strong></p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Members</h5>
+            <ul class="list-group">
+                <% members.forEach(m => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><%= m.username %> <em>(<%= m.role %>)</em></span>
+                        <% if (env.isOwner && m.role === 'member') { %>
+                        <span>
+                            <form action="/environments/<%= env.id %>/members/<%= m.id %>/kick" method="POST" style="display:inline; margin-right:0.25rem;">
+                                <button type="submit" class="btn btn-sm btn-place-action" title="Kick Member" onclick="return confirm('Kick <%= m.username %>?');">
+                                    <i class="bi bi-person-dash"></i>
+                                </button>
+                            </form>
+                            <form action="/environments/<%= env.id %>/members/<%= m.id %>/ban" method="POST" style="display:inline; margin-right:0.25rem;">
+                                <button type="submit" class="btn btn-sm btn-place-action" title="Ban Member" onclick="return confirm('Ban <%= m.username %>?');">
+                                    <i class="bi bi-person-x"></i>
+                                </button>
+                            </form>
+                            <form action="/environments/<%= env.id %>/members/<%= m.id %>/mute" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-place-action" title="Mute Member" onclick="return confirm('Mute <%= m.username %>?');">
+                                    <i class="bi bi-volume-mute"></i>
+                                </button>
+                            </form>
+                        </span>
+                        <% } %>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Places</h5>
+            <% if (places.length === 0) { %>
+                <p class="text-secondary small">No places defined.</p>
+            <% } else { %>
+                <ul class="list-group">
+                    <% places.forEach(p => { %>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <%= p.emoji %> <%= p.name %> <% if (p.parentName) { %><small>in <%= p.parentName %></small><% } %>
+                            </span>
+                            <span>
+                                <a href="/environments/<%= env.id %>/places/<%= p.id %>" class="btn btn-sm btn-place-action" title="View Place">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="Edit Place">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="/environments/<%= env.id %>/places/<%= p.id %>/delete" method="POST" style="display:inline; margin:0;">
+                                    <button type="submit" class="btn btn-sm btn-place-action" title="Delete Place" onclick="return confirm('Are you sure you want to delete this place?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </span>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } %>
+            <a href="#" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createPlaceModal">
+                <i class="bi bi-plus-lg me-1"></i>Create Place
+            </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createPlaceModal" tabindex="-1" aria-labelledby="createPlaceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createPlaceModalLabel">Create New Place</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <% if (error) { %>
+                        <p class="text-danger"><%= error %></p>
+                    <% } %>
+                    <form action="/environments/<%= env.id %>/places/create" method="POST">
+                        <div class="mb-3">
+                            <label for="place-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="place-name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="place-emoji" class="form-label">Emoji</label>
+                            <div class="input-group" style="position:relative;">
+                                <input type="text" class="form-control" id="place-emoji" name="emoji" placeholder="🏠" required readonly>
+                                <button type="button" class="btn btn-outline-secondary" id="emoji-picker-btn">
+                                    <i class="bi bi-emoji-smile"></i>
+                                </button>
+                                <div id="emoji-picker-container" style="position:absolute;z-index:9999;left:0;top:100%;display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="parentId" class="form-label">Parent Place</label>
+                            <select class="form-select" name="parentId">
+                                <option value="" selected>— Top level —</option>
+                                <% places.forEach(p => { %>
+                                    <option value="<%= p.id %>"><%= p.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" style="background-color:#FCFCFC; border-color:#FCFCFC; color:#0f1012;">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <a href="/environments" class="btn btn-secondary mt-4 mb-3">
+            <i class="bi bi-arrow-left me-1"></i>Back to Environments
+        </a>
+    </div>
+</div>
+<%- include('partials/footer') %>
+<script src="https://unpkg.com/emoji-mart@latest/dist/browser.js"></script>
+<script>
+const btn = document.getElementById('emoji-picker-btn');
+const input = document.getElementById('place-emoji');
+const container = document.getElementById('emoji-picker-container');
+let pickerVisible = false;
+let picker;
+
+btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!pickerVisible) {
+        picker = new window.EmojiMart.Picker({
+            onEmojiSelect: (emoji) => {
+                input.value = emoji.native;
+                container.innerHTML = '';
+                container.style.display = 'none';
+                pickerVisible = false;
+            },
+            theme: 'light',
+            previewPosition: 'none',
+        });
+        container.innerHTML = '';
+        container.appendChild(picker);
+        container.style.display = 'block';
+        pickerVisible = true;
+    } else {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        pickerVisible = false;
+    }
+});
+window.addEventListener('mousedown', function(e) {
+    if (pickerVisible && !container.contains(e.target) && e.target !== btn) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        pickerVisible = false;
+    }
+});
+</script>

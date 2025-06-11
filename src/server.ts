@@ -5,6 +5,7 @@ import session from "express-session";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import pool from "./models/db.model";
+import { i18nMiddleware } from "./middlewares/i18n.middleware";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(
     saveUninitialized: false
   })
 );
+app.use(i18nMiddleware);
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();
@@ -30,7 +32,14 @@ app.use((req, res, next) => {
 
 // Terms and Conditions page
 app.get("/terms", (req, res) => {
-  res.render("terms", { title: "Terms and Conditions", username: req.session.user ? req.session.user.username : undefined });
+  const lang = res.locals.lang || "en";
+  const termsView = lang === "es" ? "terms.es" : "terms.en";
+  res.render(termsView, {
+    title: res.locals.t.footer_terms,
+    username: req.session.user ? req.session.user.username : undefined,
+    lang,
+    t: res.locals.t
+  });
 });
 
 // Auth and environment routes
@@ -40,7 +49,12 @@ app.use("/environments", environmentRoutes);
 // Home (hero)
 app.get("/", (req, res) => {
   const user = req.session.user as undefined | { id: number; username: string };
-  res.render("hero", { title: "Home", username: user ? user.username : undefined });
+  res.render("hero", {
+    title: res.locals.t.hero && res.locals.t.hero.title ? res.locals.t.hero.title[0] : "Home",
+    username: user ? user.username : undefined,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // Dashboard

@@ -1,0 +1,176 @@
+{
+    "nav": {
+        "dreamlet": "DREAMLET",
+        "pricing": "PRICING",
+        "news": "NEWS",
+        "contact": "CONTACT",
+        "changelog": "CHANGELOG",
+        "login": "LOGIN",
+        "register": "REGISTER",
+        "dashboard": "DASHBOARD",
+        "logout": "LOGOUT"
+    },
+    "select_language": "Language",
+    "footer_terms": "Terms and Conditions",
+    "hero": {
+        "pretitle": [
+            "W",
+            "E",
+            "L",
+            "C",
+            "O",
+            "M",
+            "E",
+            "\u00A0",
+            "T",
+            "O"
+        ],
+        "title": [
+            "d",
+            "r",
+            "e",
+            "a",
+            "m",
+            "l",
+            "e",
+            "t"
+        ],
+        "lead": "The platform to accelerate your ideas, collaborate with your friends, and turn dreams into reality.<br>Sign up now to get started!"
+    },
+    "pricing": {
+        "title": "Pricing",
+        "subtitle": "Simple, transparent pricing for every group of friends.",
+        "plans": {
+            "basic": {
+                "name": "Basic",
+                "description": "Basic features for personal use",
+                "features": [
+                    "Up to 4 environments",
+                    "Up to 10 members per environment",
+                    "Up to 10 places",
+                    "No emoji support",
+                    "Basic moderation",
+                    "Community support",
+                    "Basic analytics",
+                    "Standard security",
+                    "Private & public environments",
+                    "Basic dice only"
+                ],
+                "price": "Free"
+            },
+            "pro": {
+                "name": "Pro",
+                "description": "Advanced features for professionals",
+                "features": [
+                    "Unlimited environments and places",
+                    "More than 10 members per environment",
+                    "Emoji support",
+                    "Advanced moderation",
+                    "Priority support",
+                    "Advanced analytics & reports",
+                    "Enhanced security",
+                    "Private & public environments",
+                    "Custom branding",
+                    "Early access to new features",
+                    "Up to 7 types of dice"
+                ],
+                "price": "$4.99"
+            }
+        }
+    },
+    "news": {
+        "title": "News",
+        "subtitle": "Latest updates and announcements from the Dreamlet team.",
+        "nonews": "No news available at the moment."
+    },
+    "contact": {
+        "title": "Contact Us",
+        "subtitle": "Have questions or feedback? We'd love to hear from you!",
+        "form": {
+            "name": "Your Name",
+            "email": "Your Email",
+            "message": "Your Message",
+            "submit": "Send Message"
+        }
+    },
+    "login": {
+        "title": "Login",
+        "form": {
+            "email": "Email",
+            "password": "Password",
+            "submit": "Login",
+            "forgot_password": "Forgot Password?",
+            "rememberMe": "Remember Me",
+            "no_account": "Don't have an account?",
+            "sign_up": "Register Now"
+        }
+    },
+    "register": {
+        "title": "Register",
+        "form": {
+            "username": "Username",
+            "email": "Email",
+            "password": "Password",
+            "confirm_password": "Confirm Password",
+            "submit": "Register",
+            "have_account": "Already have an account?",
+            "sign_in": "Login here",
+            "terms1": "I agree to the",
+            "terms2": "Terms and Conditions"
+        }
+    },
+    "dashboard": {
+        "welcome": "Welcome",
+        "create_environment": "Create New Environment",
+        "manage_environments": "My Environments",
+        "friends_list": "Friends List",
+        "no_friends": "You have no friends yet.",
+        "view_analytics": "View Analytics",
+        "support": "Need help? Contact support."
+    },
+    "environments": {
+        "title": "My Environments",
+        "create_new": "Create Environment",
+        "join": "Join Environment",
+        "name": "Environment Name",
+        "description": "Description",
+        "members": "Members",
+        "actions": "Actions",
+        "no_environments": "You have no environments yet.",
+        "leave": "Leave",
+        "delete": "Delete",
+        "edit": "Edit",
+        "manage": "Manage",
+        "invite_code": "Invite Code",
+        "tags": "Tags",
+        "nsfw": "NSFW (Not Safe For Work)",
+        "create": "Create",
+        "confirm_delete": "Are you sure you want to delete this environment?",
+        "confirm_leave": "Are you sure you want to leave this environment?"
+    },
+    "environment": {
+        "lock": "Lock Environment",
+        "invite_code": "Invite Code",
+        "locked": "Locked",
+        "yes": "Yes",
+        "no": "No",
+        "members": "Members",
+        "role": "Role",
+        "kick": "Kick Member",
+        "ban": "Ban Member",
+        "mute": "Mute Member",
+        "places": "Places",
+        "no_places": "No places defined.",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "create_place": "Create Place",
+        "create_new_place": "Create New Place",
+        "name": "Name",
+        "emoji": "Emoji",
+        "parent": "Parent Place",
+        "top_level": "— Top level —",
+        "close": "Close",
+        "back": "Back to Environments"
+    }
+}

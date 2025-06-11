@@ -573,3 +573,18 @@ a:hover {
     font-size: 0.9rem;
   }
 }
+.fly-in-text.fly-pretitle {
+  font-size: 1.2em;
+  color: #FCFCFC;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.fly-in-text.fly-pretitle li {
+  color: #FCFCFC;
+  font-family: 'Geist Mono', 'Nunito', monospace, Arial, sans-serif;
+  font-size: 1.2em;
+  font-weight: 600;
+}

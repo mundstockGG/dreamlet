@@ -1,29 +1,29 @@
 <%- include('partials/header', { title, username }) %>
 <div class="container page-content">
   <div class="login-container">
-    <h4 class="text-center mb-4">Login</h4>
+    <h4 class="text-center mb-4"><%= t.login.title %></h4>
     <% if (error) { %>
     <p class="text-danger text-center"><%= error %></p>
     <% } %>
     <form action="/login" method="POST">
       <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+        <label for="username" class="form-label"><%= t.login.form.username %></label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="<%= t.login.form.username_placeholder %>" required>
       </div>
       <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+        <label for="password" class="form-label"><%= t.login.form.password %></label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="<%= t.login.form.password_placeholder %>" required>
       </div>
       <div class="mb-3 form-check">
         <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe">
-        <label class="form-check-label" for="rememberMe">Remember me</label>
+        <label class="form-check-label" for="rememberMe"><%= t.login.form.rememberMe %></label>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
+      <button type="submit" class="btn btn-primary w-100"><%= t.login.form.submit %></button>
       <div class="text-center mt-3">
-        <a href="#" class="text-muted">Forgot password?</a>
+        <a href="#" class="text-muted"><%= t.login.form.forgot_password %></a>
       </div>
       <div class="text-center mt-2">
-        <p class="text-muted">Don't have an account? <a href="/register">Sign up</a></p>
+        <p class="text-muted"><%= t.login.form.no_account %> <a href="/register"><%= t.login.form.sign_up %></a></p>
       </div>
     </form>
   </div>

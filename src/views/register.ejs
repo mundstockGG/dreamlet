@@ -1,32 +1,32 @@
 <%- include('partials/header', { title, username }) %>
 <div class="container page-content">
     <div class="register-container">
-        <h4 class="text-center mb-4">Register</h4>
+        <h4 class="text-center mb-4"><%= t.register.title %></h4>
         <% if (error) { %>
         <p class="text-danger text-center"><%= error %></p>
         <% } %>
         <form action="/register" method="POST">
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label"><%= t.register.form.username %></label>
                 <input type="text" class="form-control" id="username" name="username" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="email" class="form-label"><%= t.register.form.email %></label>
                 <input type="email" class="form-control" id="email" name="email" required>
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label"><%= t.register.form.password %></label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <label for="confirmPassword" class="form-label"><%= t.register.form.confirm_password %></label>
                 <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
             </div>
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                <label class="form-check-label" for="terms">I agree to the <a href="/terms" target="_blank">Terms of Service</a></label>
+                <label class="form-check-label" for="terms"><%= t.register.form.terms1 %> <a href="/terms" target="_blank"><%= t.register.form.terms2 %></a></label>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Register</button>
+            <button type="submit" class="btn btn-primary w-100"><%= t.register.form.submit %></button>
         </form>
     </div>
 </div>

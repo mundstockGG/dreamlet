@@ -1,14 +1,14 @@
-<%- include('partials/header', { title: 'My Environments', username }) %>
+<%- include('partials/header', { title: t.environments.title, username, lang, t }) %>
 
 <div class="container page-content">
-  <h4 class="mb-4">My Environments</h4>
+  <h4 class="mb-4"><%= t.environments.title %></h4>
   <% if (error) { %>
   <div class="alert alert-danger"><%= error %></div>
   <% } %>
 
   <div class="row">
     <% if (environments.length === 0) { %>
-    <p>You have no environments yet.</p>
+    <p><%= t.environments.no_environments %></p>
     <% } else { %>
     <% environments.forEach(env => { %>
     <div class="col-12 col-md-6 mb-3">
@@ -17,32 +17,28 @@
           <h5 class="card-title">
             <%= env.name %>
             <% if (env.isNSFW) { %>
-            <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="NSFW: This environment is not safe for work.
-It is intended for adults and may contain mature, explicit, or sensitive content.
-Please join only if you are of legal age and comfortable with adult themes."></i>
+            <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="<%= t.environments.nsfw %>\nIt is intended for adults and may contain mature, explicit, or sensitive content.\nPlease join only if you are of legal age and comfortable with adult themes."></i>
             <% } else { %>
-            <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="SFW: This environment is safe for work.
-Only general, non-explicit, and family-friendly roleplay is allowed.
-Mature or adult content is strictly prohibited."></i>
+            <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="<%= t.environments.sfw || 'SFW: This environment is safe for work. Only general, non-explicit, and family-friendly roleplay is allowed. Mature or adult content is strictly prohibited.' %>"></i>
             <% } %>
           </h5>
           <p class="text-secondary small">
-            Invite Code: <strong><%= env.inviteCode %></strong>
+            <%= t.environments.invite_code %>: <strong><%= env.inviteCode %></strong>
           </p>
           <% if (env.tags && env.tags.length) { %>
           <p class="text-secondary small">
-            Tags: <%= JSON.parse(env.tags).join(', ') %>
+            <%= t.environments.tags %>: <%= JSON.parse(env.tags).join(', ') %>
           </p>
           <% } %>
           <div class="mt-auto">
             <a href="/environments/<%= env.id %>" class="btn btn-secondary btn-sm">
-              Manage
+              <%= t.environments.manage %>
             </a>
             <form action="/environments/<%= env.id %>/leave" method="POST" style="display:inline-block; margin-left:0.5rem;">
               <button class="btn btn-danger btn-sm" type="submit" <%= env.isOwner 
                         ? 'disabled title="Owners cannot leave their own environment"' 
                         : '' %>>
-                <i class="bi bi-door-open me-1"></i>Leave
+                <i class="bi bi-door-open me-1"></i><%= t.environments.leave %>
               </button>
             </form>
           </div>
@@ -56,10 +52,10 @@ Mature or adult content is strictly prohibited."></i>
   <!-- Create and Join buttons -->
   <div class="mt-3">
     <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createEnvModal">
-      <i class="bi bi-plus-lg me-1"></i>Create New
+      <i class="bi bi-plus-lg me-1"></i><%= t.environments.create_new %>
     </button>
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinEnvModal">
-      <i class="bi bi-people-fill me-1"></i>Join Environment
+      <i class="bi bi-people-fill me-1"></i><%= t.environments.join %>
     </button>
   </div>
 
@@ -68,7 +64,7 @@ Mature or adult content is strictly prohibited."></i>
     <div class="modal-dialog">
       <div class="modal-content bg-dark text-light">
         <div class="modal-header">
-          <h5 class="modal-title" id="createEnvModalLabel">Create New Environment</h5>
+          <h5 class="modal-title" id="createEnvModalLabel"><%= t.environments.create_new %></h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -77,22 +73,22 @@ Mature or adult content is strictly prohibited."></i>
           <% } %>
           <form action="/environments/create" method="POST">
             <div class="mb-3">
-              <label for="envName" class="form-label">Environment Name</label>
+              <label for="envName" class="form-label"><%= t.environments.name %></label>
               <input type="text" class="form-control bg-secondary text-light border-0" id="envName" name="name" required>
             </div>
             <div class="mb-3">
-              <label for="envDescription" class="form-label">Description</label>
+              <label for="envDescription" class="form-label"><%= t.environments.description %></label>
               <textarea class="form-control bg-secondary text-light border-0" id="envDescription" name="description" rows="3"></textarea>
             </div>
             <div class="mb-3 form-check">
               <input type="checkbox" class="form-check-input" id="env-nsfw" name="is_nsfw">
-              <label class="form-check-label" for="env-nsfw">NSFW (Adult Content)</label>
+              <label class="form-check-label" for="env-nsfw"><%= t.environments.nsfw %></label>
             </div>
             <div class="mb-3">
-              <label for="env-tags" class="form-label">Tags (comma separated)</label>
+              <label for="env-tags" class="form-label"><%= t.environments.tags %></label>
               <input type="text" class="form-control bg-secondary text-light border-0" id="env-tags" name="tags" placeholder="fantasy, medieval, adventure">
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary"><%= t.environments.create %></button>
           </form>
         </div>
       </div>
@@ -104,16 +100,16 @@ Mature or adult content is strictly prohibited."></i>
     <div class="modal-dialog">
       <div class="modal-content bg-dark text-light">
         <div class="modal-header">
-          <h5 class="modal-title" id="joinEnvModalLabel">Join Environment</h5>
+          <h5 class="modal-title" id="joinEnvModalLabel"><%= t.environments.join %></h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form action="/environments/join" method="POST">
             <div class="mb-3">
-              <label for="inviteCode" class="form-label">Invite Code</label>
+              <label for="inviteCode" class="form-label"><%= t.environments.invite_code %></label>
               <input type="text" class="form-control bg-secondary text-light border-0" id="inviteCode" name="inviteCode" placeholder="Enter code" required>
             </div>
-            <button type="submit" class="btn btn-success">Join</button>
+            <button type="submit" class="btn btn-success"><%= t.environments.join %></button>
           </form>
         </div>
       </div>

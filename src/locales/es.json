@@ -1,0 +1,178 @@
+{
+    "nav": {
+        "dreamlet": "DREAMLET",
+        "pricing": "PRECIOS",
+        "news": "NOTICIAS",
+        "contact": "CONTACTO",
+        "changelog": "CAMBIOS",
+        "login": "INGRESAR",
+        "register": "REGISTRARSE",
+        "dashboard": "TABLERO",
+        "logout": "SALIR"
+    },
+    "select_language": "Idioma",
+    "footer_terms": "Términos y Condiciones",
+    "hero": {
+        "pretitle": [
+            "B",
+            "I",
+            "E",
+            "N",
+            "V",
+            "E",
+            "N",
+            "I",
+            "D",
+            "O",
+            "\u00A0",
+            "A"
+        ],
+        "title": [
+            "d",
+            "r",
+            "e",
+            "a",
+            "m",
+            "l",
+            "e",
+            "t"
+        ],
+        "lead": "La plataforma para acelerar tus ideas, colaborar con tus amigos y convertir sueños en realidad.<br>¡Regístrate ahora para comenzar!"
+    },
+    "pricing": {
+        "title": "Precios",
+        "subtitle": "Precios simples y transparentes para cada grupo de amigos.",
+        "plans": {
+            "basic": {
+                "name": "Básico",
+                "description": "Funciones básicas para uso personal",
+                "features": [
+                    "Hasta 4 entornos",
+                    "Hasta 10 miembros por entorno",
+                    "Hasta 10 lugares",
+                    "Sin soporte de emojis",
+                    "Moderación básica",
+                    "Soporte de la comunidad",
+                    "Analíticas básicas",
+                    "Seguridad estándar",
+                    "Entornos privados y públicos",
+                    "Solo dados básicos"
+                ],
+                "price": "Gratis"
+            },
+            "pro": {
+                "name": "Pro",
+                "description": "Funciones avanzadas para profesionales",
+                "features": [
+                    "Entornos y lugares ilimitados",
+                    "Más de 10 miembros por entorno",
+                    "Soporte de emojis",
+                    "Moderación avanzada",
+                    "Soporte prioritario",
+                    "Analíticas y reportes avanzados",
+                    "Seguridad mejorada",
+                    "Entornos privados y públicos",
+                    "Personalización de marca",
+                    "Acceso anticipado a nuevas funciones",
+                    "Hasta 7 tipos de dados"
+                ],
+                "price": "$4.99"
+            }
+        }
+    },
+    "news": {
+        "title": "Noticias",
+        "subtitle": "Últimas actualizaciones y anuncios del equipo de Dreamlet.",
+        "nonews": "No hay noticias disponibles en este momento."
+    },
+    "contact": {
+        "title": "Contáctanos",
+        "subtitle": "¿Tienes preguntas o comentarios? ¡Nos encantaría saber de ti!",
+        "form": {
+            "name": "Tu Nombre",
+            "email": "Tu Correo",
+            "message": "Tu Mensaje",
+            "submit": "Enviar Mensaje"
+        }
+    },
+    "login": {
+        "title": "Ingresar",
+        "form": {
+            "email": "Correo",
+            "password": "Contraseña",
+            "submit": "Ingresar",
+            "forgot_password": "¿Olvidaste tu contraseña?",
+            "rememberMe": "Recuérdame",
+            "no_account": "¿No tienes una cuenta?",
+            "sign_up": "Regístrate ahora"
+        }
+    },
+    "register": {
+        "title": "Registrarse",
+        "form": {
+            "username": "Nombre de usuario",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "confirm_password": "Confirmar contraseña",
+            "submit": "Registrarse",
+            "have_account": "¿Ya tienes una cuenta?",
+            "sign_in": "Inicia sesión aquí",
+            "terms1": "Acepto los",
+            "terms2": "Términos y Condiciones"
+        }
+    },
+    "dashboard": {
+        "welcome": "Bienvenido",
+        "create_environment": "Crear nuevo entorno",
+        "manage_environments": "Mis entornos",
+        "friends_list": "Lista de amigos",
+        "no_friends": "Aún no tienes amigos.",
+        "view_analytics": "Ver analíticas",
+        "support": "¿Necesitas ayuda? Contacta soporte."
+    },
+    "environments": {
+        "title": "Mis entornos",
+        "create_new": "Crear entorno",
+        "join": "Unirse a un entorno",
+        "name": "Nombre del entorno",
+        "description": "Descripción",
+        "members": "Miembros",
+        "actions": "Acciones",
+        "no_environments": "Aún no tienes entornos.",
+        "leave": "Salir",
+        "delete": "Eliminar",
+        "edit": "Editar",
+        "manage": "Gestionar",
+        "invite_code": "Código de invitación",
+        "tags": "Etiquetas",
+        "nsfw": "NSFW (No apto para el trabajo)",
+        "create": "Crear",
+        "confirm_delete": "¿Estás seguro de que deseas eliminar este entorno?",
+        "confirm_leave": "¿Estás seguro de que deseas salir de este entorno?"
+    },
+    "environment": {
+        "lock": "Bloquear entorno",
+        "invite_code": "Código de invitación",
+        "locked": "Bloqueado",
+        "yes": "Sí",
+        "no": "No",
+        "members": "Miembros",
+        "role": "Rol",
+        "kick": "Expulsar miembro",
+        "ban": "Banear miembro",
+        "mute": "Silenciar miembro",
+        "places": "Lugares",
+        "no_places": "No hay lugares definidos.",
+        "view": "Ver",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "create_place": "Crear lugar",
+        "create_new_place": "Crear nuevo lugar",
+        "name": "Nombre",
+        "emoji": "Emoji",
+        "parent": "Lugar padre",
+        "top_level": "— Nivel superior —",
+        "close": "Cerrar",
+        "back": "Volver a entornos"
+    }
+}

@@ -63,9 +63,40 @@ Mature or adult content is strictly prohibited."></i>
     </button>
   </div>
 
-  <!-- Create Environment Modal (your existing markup) -->
-  <div class="modal fade" id="createEnvModal" tabindex="-1" aria-hidden="true">
-    <!-- … -->
+  <!-- Create Environment Modal -->
+  <div class="modal fade" id="createEnvModal" tabindex="-1" aria-labelledby="createEnvModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createEnvModalLabel">Create New Environment</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% if (error) { %>
+          <div class="alert alert-danger"><%= error %></div>
+          <% } %>
+          <form action="/environments/create" method="POST">
+            <div class="mb-3">
+              <label for="envName" class="form-label">Environment Name</label>
+              <input type="text" class="form-control bg-secondary text-light border-0" id="envName" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="envDescription" class="form-label">Description</label>
+              <textarea class="form-control bg-secondary text-light border-0" id="envDescription" name="description" rows="3"></textarea>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="envIsNSFW" name="isNSFW">
+              <label class="form-check-label" for="envIsNSFW">NSFW (Adult Content)</label>
+            </div>
+            <div class="mb-3">
+              <label for="envTags" class="form-label">Tags (comma separated)</label>
+              <input type="text" class="form-control bg-secondary text-light border-0" id="envTags" name="tags" placeholder="fantasy, medieval, adventure">
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- NEW: Join Environment Modal -->

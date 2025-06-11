@@ -42,7 +42,7 @@ An interactive roleplay environment platform where users can create, join, and m
 
 1. **Clone the repo**  
    ```bash
-   git clone https://github.com/your-username/roleplay-platform.git
+   git clone https://github.com/mundstockGG/dreamlet.git
    cd roleplay-platform
    ```
 

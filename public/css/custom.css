@@ -1,3 +1,33 @@
+/* Place tree visual hierarchy */
+.place-tree-level-1 { padding-left: 2em; position: relative; }
+.place-tree-level-2 { padding-left: 3.5em; position: relative; }
+.place-tree-level-3 { padding-left: 5em; position: relative; }
+/* ...add more as needed */
+
+.place-tree-level-1::before,
+.place-tree-level-2::before,
+.place-tree-level-3::before {
+  content: '';
+  position: absolute;
+  left: 1em;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #ccc;
+}
+
+.place-tree-level-1 > a::before,
+.place-tree-level-2 > a::before,
+.place-tree-level-3 > a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1em;
+  height: 1px;
+  background: #ccc;
+  transform: translateY(-50%);
+}
 /* Environment Chat: Only update text color for places list */
 .environment-chat-places .list-group-item,
 .environment-chat-places .list-group-item a {

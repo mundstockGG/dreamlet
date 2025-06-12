@@ -151,7 +151,7 @@ io.on('connection', (socket) => {
     socket.join(`env:${envId}`);
     // Only fetch lobby messages (place_id IS NULL)
     const msgs = await envService.getEnvironmentMessages(envId);
-    socket.emit('initialLobbyMessages', msgs.filter((m: any) => !m.placeId));
+    socket.emit('initialLobbyMessages', msgs);
   });
 
   // Place join: only fetch messages for that place

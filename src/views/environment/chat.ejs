@@ -78,10 +78,24 @@
     });
 
     // 2) Join and switch to a place
+    function updateActiveList() {
+      document.querySelectorAll('.list-group-item').forEach(li => li.classList.remove('active'));
+      if (activePlace === null) {
+        lobbyLink.closest('.list-group-item').classList.add('active');
+      } else {
+        document.querySelectorAll('.place-link').forEach(a => {
+          if (+a.dataset.placeId === activePlace) {
+            a.closest('.list-group-item').classList.add('active');
+          }
+        });
+      }
+    }
+
     function switchToPlace(placeId) {
       activePlace = placeId;
       hist.innerHTML = ''; // clear
       socket.emit('joinPlace', { envId, placeId });
+      updateActiveList();
     }
     placeLinks.forEach(a => {
       a.addEventListener('click', e => {
@@ -94,6 +108,7 @@
       activePlace = null;
       hist.innerHTML = '';
       socket.emit('joinEnv', envId);
+      updateActiveList();
     });
 
     // 3) Handle incoming batches

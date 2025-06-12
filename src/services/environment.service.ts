@@ -267,7 +267,7 @@ export async function getEnvironmentMessages(envId: number): Promise<Message[]> 
             m.created_at AS createdAt
        FROM messages m
        JOIN users u ON u.id = m.user_id
-      WHERE m.environment_id = ?
+      WHERE m.environment_id = ? AND m.place_id IS NULL
       ORDER BY m.created_at ASC`,
     [envId]
   );
@@ -279,8 +279,8 @@ export async function createEnvironmentMessage(
 ) {
   await pool.execute(
     `INSERT INTO messages
-       (environment_id,user_id,content)
-     VALUES (?,?,?)`,
+       (environment_id, place_id, user_id, content)
+     VALUES (?, NULL, ?, ?)`,
     [envId, userId, content]
   );
 }

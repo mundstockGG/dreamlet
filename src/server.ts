@@ -141,6 +141,18 @@ app.get("/changelog", (req, res) => {
 
 // Socket.IO logic:
 io.on('connection', (socket) => {
+  // Typing indicator
+  socket.on('typing', ({ envId, placeId }) => {
+    const user = (socket.handshake && (socket.handshake as any).session && (socket.handshake as any).session.user) || {};
+    if (!user.username) return;
+    if (placeId) {
+      // Place chat
+      socket.to(`env:${envId}:place:${placeId}`).emit('showTyping', { username: user.username, envId, placeId });
+    } else {
+      // Lobby chat
+      socket.to(`env:${envId}`).emit('showTyping', { username: user.username, envId });
+    }
+  });
   const user = (socket.handshake as any).session?.user;
   if (!user) {
     return socket.disconnect();

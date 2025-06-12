@@ -707,3 +707,17 @@ a:hover {
 .news-card-link:hover {
   color: #fff;
 }
+
+/* Minimal highlight for diff blocks in changelog cards */
+.card .hljs.diff .hljs-deletion {
+  background: #ffeaea;
+  color: #c00;
+}
+.card .hljs.diff .hljs-addition {
+  background: #eaffea;
+  color: #080;
+}
+.card .hljs.diff .hljs-meta {
+  background: #e6f4ff;
+  color: #1a4a7a;
+}

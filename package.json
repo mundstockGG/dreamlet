@@ -1,5 +1,5 @@
 {
-  "name": "roleplay-platform",
+  "name": "dreamlet",
   "version": "1.0.0",
   "main": "build/server.js",
   "scripts": {
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "diff2html": "^3.4.51",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.9",
     "emoji-mart": "^5.6.0",

@@ -6,6 +6,7 @@ import MySQLStoreFactory from "express-mysql-session";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import newsRoutes from "./routes/news.routes";
+import changelogRouter from "./routes/changelog.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
 import flash from "express-flash";
@@ -61,6 +62,9 @@ app.use("/environments", environmentRoutes);
 
 // News (from Markdown files)
 app.use(newsRoutes);
+
+// Changelog
+app.use("/", changelogRouter);
 
 // Home (hero)
 app.get("/", (req, res) => {

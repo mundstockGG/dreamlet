@@ -7,12 +7,18 @@ export const getLogin = (req: Request, res: Response) => {
 };
 
 export const postLogin = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password, rememberMe } = req.body;
   const user = await findUserByUsername(username);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return res.render('login', { title: 'Login', username: req.session.user?.username, error: 'Invalid credentials' });
   }
   req.session.user = { id: user.id, username: user.username };
+  // Set session cookie maxAge if rememberMe is checked
+  if (rememberMe) {
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
+  } else {
+    req.session.cookie.expires = undefined; // Session cookie (expires on browser close)
+  }
   res.redirect('/dashboard');
 };
 

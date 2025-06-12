@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
+import flash from "express-flash";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use(
   })
 );
 app.use(i18nMiddleware);
+app.use(flash());
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();

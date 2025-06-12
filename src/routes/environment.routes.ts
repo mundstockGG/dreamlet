@@ -6,6 +6,9 @@ import {
   leaveEnvironment,
   getManageEnvironment,
   postCreatePlace,
+  getEditPlace,
+  postEditPlace,
+  postTogglePlaceLock,
   toggleEnvironmentLock,
   promoteUser,
   kickUser,
@@ -17,14 +20,21 @@ import { ensureAuth } from '../middlewares/auth.middleware';
 const router = Router();
 router.use(ensureAuth);
 
-router.get('/', getEnvironments);
-router.post('/create', postCreateEnvironment);
-router.post('/join', joinEnvironment);
-router.post('/:id/leave', leaveEnvironment);
-router.get('/:id', getManageEnvironment);
-router.post('/:id/places/create', postCreatePlace);
-router.post('/:id/lock', toggleEnvironmentLock);
-// Member moderation (owners only)
+router.get('/',             getEnvironments);
+router.post('/create',      postCreateEnvironment);
+router.post('/join',        joinEnvironment);
+router.post('/:id/leave',   leaveEnvironment);
+
+router.get('/:id',          getManageEnvironment);
+router.post('/:id/lock',    toggleEnvironmentLock);
+
+// Places
+router.post('/:id/places/create',             postCreatePlace);
+router.get('/:id/places/:placeId/edit',       getEditPlace);
+router.post('/:id/places/:placeId/edit',      postEditPlace);
+router.post('/:id/places/:placeId/lock',      postTogglePlaceLock);
+
+// Moderation
 router.post('/:id/members/:memberId/promote', promoteUser);
 router.post('/:id/members/:memberId/kick',    kickUser);
 router.post('/:id/members/:memberId/ban',     banUser);

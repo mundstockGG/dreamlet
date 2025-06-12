@@ -1,5 +1,7 @@
 import pool from '../models/db.model';
 import crypto from 'crypto';
+// @ts-ignore
+import * as placeService from '../services/place.service';
 
 interface NewEnv {
   ownerId: number;
@@ -29,21 +31,53 @@ export async function findByUser(userId: number) {
   return rows as any[];
 }
 
-export async function createEnvironment(data: NewEnv) {
+// Count environments by owner (for tier limits)
+export async function countEnvironmentsByUser(ownerId: number): Promise<number> {
+  const [rows] = await pool.execute<any[]>(
+    `SELECT COUNT(*) AS cnt 
+       FROM environments 
+      WHERE owner_id = ?`,
+    [ownerId]
+  );
+  return rows[0].cnt;
+}
+
+// Create environment + auto‐add lobby + membership
+export async function createEnvironment(data: {
+  ownerId: number;
+  name: string;
+  isNSFW: boolean;
+  difficulty: 'chill' | 'survival';
+  tags: string[];
+}) {
   const inviteCode = crypto.randomBytes(4).toString('hex');
   const tagsJson   = JSON.stringify(data.tags);
+
+  // Insert environment with difficulty
   const [result] = await pool.execute<any>(
     `INSERT INTO environments
-       (name, is_nsfw, owner_id, invite_code, tags)
-     VALUES (?, ?, ?, ?, ?)`,
-    [data.name, data.isNSFW ? 1 : 0, data.ownerId, inviteCode, tagsJson]
+       (name, is_nsfw, difficulty, owner_id, invite_code, tags)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      data.name,
+      data.isNSFW ? 1 : 0,
+      data.difficulty,
+      data.ownerId,
+      inviteCode,
+      tagsJson
+    ]
   );
+
   const envId = result.insertId;
+
+  // Auto‐join owner as moderator/owner
   await pool.execute(
     `INSERT INTO environment_members (user_id, environment_id, role)
-       VALUES (?, ?, 'owner')`,
+     VALUES (?, ?, 'owner')`,
     [data.ownerId, envId]
   );
+
+  return envId;
 }
 
 // Toggle environment lock
@@ -203,27 +237,16 @@ export async function getMembers(envId: number) {
   return [...owners, ...members];
 }
 
-export async function getPlaces(envId: number) {
-  const [rows] = await pool.execute<any[]>(
-    `SELECT 
-       p.id, p.name, p.emoji,
-       p.is_locked AS isLocked,
-       p.parent_id AS parentId,
-       parent.name    AS parentName
-     FROM places p
-     LEFT JOIN places parent ON parent.id = p.parent_id
-     WHERE p.environment_id = ?
-     ORDER BY p.parent_id, p.id`,
-    [envId]
-  );
-  return rows;
-}
+/** Returns 'owner' | 'moderator' | 'member' or null */
+export async function getMemberRole(userId: number, envId: number): Promise<string|null> {
+  // check if owner
+  const [[envRow]] = await pool.execute<any[]>(`SELECT owner_id FROM environments WHERE id = ?`, [envId]);
+  if (envRow?.owner_id === userId) return 'owner';
 
-export async function createPlace(data: { environmentId: number; name: string; emoji: string; parentId: number | null; }) {
-  await pool.execute(
-    `INSERT INTO places 
-      (environment_id, name, emoji, parent_id)
-     VALUES (?, ?, ?, ?)`,
-    [data.environmentId, data.name, data.emoji, data.parentId]
-  );
+  // check membership
+  const [memberRows] = await pool.execute<any[]>(
+    `SELECT role FROM environment_members 
+     WHERE environment_id = ? AND user_id = ?
+  `, [envId, userId]);
+  return memberRows[0]?.role || null;
 }

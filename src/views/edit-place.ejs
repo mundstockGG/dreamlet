@@ -1,0 +1,31 @@
+<%- include('partials/header', { title: title, username: username }) %>
+
+<div class="container mt-4">
+  <h2>Edit Place</h2>
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+  <form method="POST" action="/environments/<%= env.id %>/places/<%= place.id %>/edit">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" class="form-control" id="name" name="name" value="<%= place.name %>" required maxlength="32">
+    </div>
+    <div class="mb-3">
+      <label for="emoji" class="form-label">Emoji</label>
+      <input type="text" class="form-control" id="emoji" name="emoji" value="<%= place.emoji %>" maxlength="2" pattern="^\\p{Emoji}{1,2}$" title="Enter a valid emoji" required>
+    </div>
+    <div class="mb-3">
+      <label for="parentId" class="form-label">Parent Place (optional)</label>
+      <select class="form-select" id="parentId" name="parentId">
+        <option value="">None</option>
+        <% places.forEach(function(p) { if (p.id !== place.id) { %>
+          <option value="<%= p.id %>" <%= place.parentId === p.id ? 'selected' : '' %>><%= p.name %></option>
+        <% } }); %>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="/environments/<%= env.id %>" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

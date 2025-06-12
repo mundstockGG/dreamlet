@@ -1,54 +1,5 @@
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const socket = io();
+<%- include('../partials/header', { title, username }) %>
 
-  const envId       = <%= env.id %>;
-  const activePlace = typeof activePlaceId !== 'undefined' ? activePlaceId : null;
-
-  // Join the right room(s)
-  socket.emit('joinEnv', envId);
-  if (activePlace !== null) {
-    socket.emit('joinPlace', { envId, placeId: activePlace });
-  }
-
-  // On lobby messages
-  socket.on('lobbyMessage', msg => {
-    if (!activePlace) {
-      appendMessage(msg.username, msg.content);
-    }
-  });
-
-  // On place messages
-  socket.on('placeMessage', msg => {
-    if (msg.placeId === activePlace) {
-      appendMessage(msg.username, msg.content);
-    }
-  });
-
-  // Form submit
-  const form = document.querySelector('form[datasocket="chat"]');
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const input = form.querySelector('input[name="message"]');
-    const content = input.value.trim();
-    if (!content) return;
-    if (activePlace !== null) {
-      socket.emit('placeMessage', { envId, placeId: activePlace, content });
-    } else {
-      socket.emit('lobbyMessage', { envId, content });
-    }
-    input.value = '';
-  });
-
-  function appendMessage(username, content) {
-    const container = document.getElementById('chat-history');
-    const div = document.createElement('div');
-    div.classList.add('mb-2');
-    div.innerHTML = `<strong>${username}:</strong> ${content}`;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-  }
-</script>
 <%- include('../partials/header', { title, username }) %>
 
 <div class="d-flex" style="height: calc(100vh - 64px);">
@@ -59,11 +10,11 @@
     <ul class="list-group">
       <!-- Lobby link -->
       <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>">
-        <a href="/environments/<%= env.id %>/chat" class="text-decoration-none">💬 Lobby</a>
+        <a href="#" class="lobby-link text-decoration-none">💬 Lobby</a>
       </li>
       <% places.forEach(p => { %>
         <li class="list-group-item <%= activePlaceId===p.id ? 'active' : '' %>">
-          <a href="/environments/<%= env.id %>/places/<%= p.id %>" class="text-decoration-none">
+          <a href="#" class="place-link text-decoration-none" data-place-id="<%= p.id %>">
             <%= p.emoji %> <%= p.name %>
           </a>
         </li>
@@ -83,11 +34,7 @@
     </div>
 
     <!-- Chat input -->
-    <form action="<%= activePlaceId 
-        ? `/environments/${env.id}/places/${activePlaceId}/send`
-        : `/environments/${env.id}/chat/send` %>"
-      method="POST" class="d-flex" datasocket="chat"
-    >
+    <form id="chat-form" class="d-flex">
       <input type="text" name="message" class="form-control me-2" placeholder="Type your message…" required>
       <button class="btn btn-primary">Send</button>
     </form>
@@ -109,3 +56,77 @@
 </div>
 
 <%- include('../partials/footer') %>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const socket = io();
+    const envId  = '<%= env.id %>';
+    let   activePlace = null; // null = lobby
+
+    // Elements
+    const form    = document.getElementById('chat-form');
+    const input   = form.querySelector('input[name="message"]');
+    const hist    = document.getElementById('chat-history');
+    const placeLinks = document.querySelectorAll('.place-link');
+    const lobbyLink  = document.querySelector('.lobby-link');
+
+    // 1) Join Lobby and fetch its messages
+    socket.emit('joinEnv', envId);
+    socket.on('initialLobbyMessages', msgs => {
+      hist.innerHTML = ''; // clear
+      msgs.forEach(append);
+    });
+
+    // 2) Join and switch to a place
+    function switchToPlace(placeId) {
+      activePlace = placeId;
+      hist.innerHTML = ''; // clear
+      socket.emit('joinPlace', { envId, placeId });
+    }
+    placeLinks.forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        switchToPlace(+a.dataset.placeId);
+      });
+    });
+    lobbyLink.addEventListener('click', e => {
+      e.preventDefault();
+      activePlace = null;
+      hist.innerHTML = '';
+      socket.emit('joinEnv', envId);
+    });
+
+    // 3) Handle incoming batches
+    socket.on('initialPlaceMessages', msgs => {
+      hist.innerHTML = '';
+      msgs.forEach(append);
+    });
+    socket.on('lobbyMessage', msg => {
+      if (activePlace === null) append(msg);
+    });
+    socket.on('placeMessage', msg => {
+      if (msg.placeId === activePlace) append(msg);
+    });
+
+    // 4) Form submit → emit, not POST
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const content = input.value.trim();
+      if (!content) return;
+      if (activePlace === null) {
+        socket.emit('lobbyMessage', { envId, content });
+      } else {
+        socket.emit('placeMessage', { envId, placeId: activePlace, content });
+      }
+      input.value = '';
+    });
+
+    function append({ username, content, createdAt }) {
+      const div = document.createElement('div');
+      div.classList.add('mb-2');
+      div.innerHTML = `<strong>${username}:</strong> ${content}`;
+      hist.appendChild(div);
+      hist.scrollTop = hist.scrollHeight;
+    }
+  });
+</script>

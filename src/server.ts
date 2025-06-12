@@ -146,40 +146,40 @@ io.on('connection', (socket) => {
     return socket.disconnect();
   }
 
-  // Join lobby room: e.g. "env:2"
-  socket.on('joinEnv', (envId) => {
+  // Lobby join: only fetch lobby messages (place_id IS NULL)
+  socket.on('joinEnv', async (envId: number) => {
     socket.join(`env:${envId}`);
+    // Only fetch lobby messages (place_id IS NULL)
+    const msgs = await envService.getEnvironmentMessages(envId);
+    socket.emit('initialLobbyMessages', msgs.filter((m: any) => !m.placeId));
   });
 
-  // Join place room: e.g. "env:2:place:5"
-  socket.on('joinPlace', (payload) => {
-    const { envId, placeId } = payload;
+  // Place join: only fetch messages for that place
+  socket.on('joinPlace', async ({ envId, placeId }) => {
     socket.join(`env:${envId}:place:${placeId}`);
+    const msgs = await placeService.getPlaceMessages(placeId);
+    socket.emit('initialPlaceMessages', msgs);
   });
 
-  // Handle lobby messages
-  socket.on('lobbyMessage', async (data) => {
-    const { envId, content } = data;
+  // Lobby message: only broadcast to lobby (env:<id>)
+  socket.on('lobbyMessage', async ({ envId, content }) => {
     await envService.createEnvironmentMessage(envId, user.id, content);
     io.to(`env:${envId}`)
       .emit('lobbyMessage', {
-        userId: user.id,
         username: user.username,
         content,
-        createdAt: new Date()
+        createdAt: Date.now()
       });
   });
 
-  // Handle place‐specific messages
-  socket.on('placeMessage', async (data) => {
-    const { envId, placeId, content } = data;
+  // Place message: only broadcast to place (env:<id>:place:<placeId>)
+  socket.on('placeMessage', async ({ envId, placeId, content }) => {
     await placeService.createPlaceMessage(envId, placeId, user.id, content);
     io.to(`env:${envId}:place:${placeId}`)
       .emit('placeMessage', {
-        userId: user.id,
         username: user.username,
         content,
-        createdAt: new Date(),
+        createdAt: Date.now(),
         placeId
       });
   });

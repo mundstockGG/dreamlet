@@ -1,8 +1,9 @@
 import express from "express";
+import http from "http";
+import { Server as IOServer } from "socket.io";
+import session from "express-session";
 import path from "path";
 import dotenv from "dotenv";
-import session from "express-session";
-import MySQLStoreFactory from "express-mysql-session";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import newsRoutes from "./routes/news.routes";
@@ -10,10 +11,14 @@ import changelogRouter from "./routes/changelog.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
 import flash from "express-flash";
+import * as envService from './services/environment.service';
+import * as placeService from './services/place.service';
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new IOServer(server);
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true })); // Body parser
@@ -22,6 +27,7 @@ app.use(express.static(publicPath)); // Static files
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
 
+const MySQLStoreFactory = require('express-mysql-session');
 const MySQLStore = MySQLStoreFactory(session);
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
@@ -29,15 +35,20 @@ const sessionStore = new MySQLStore({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME
 });
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore
-  })
-);
+const expressSession = session({
+  secret: process.env.SESSION_SECRET || "secret",
+  resave: false,
+  saveUninitialized: false,
+  store: sessionStore
+});
+app.use(expressSession);
+// Share session data with socket handlers:
+try {
+  const sharedSession = require("express-socket.io-session");
+  io.use(sharedSession(expressSession, { autoSave: true }));
+} catch (e) {
+  console.warn('express-socket.io-session not installed, skipping socket session sharing.');
+}
 app.use(i18nMiddleware);
 app.use(flash());
 app.use((req, res, next) => {
@@ -128,11 +139,57 @@ app.get("/changelog", (req, res) => {
   });
 });
 
+// Socket.IO logic:
+io.on('connection', (socket) => {
+  const user = (socket.handshake as any).session?.user;
+  if (!user) {
+    return socket.disconnect();
+  }
+
+  // Join lobby room: e.g. "env:2"
+  socket.on('joinEnv', (envId) => {
+    socket.join(`env:${envId}`);
+  });
+
+  // Join place room: e.g. "env:2:place:5"
+  socket.on('joinPlace', (payload) => {
+    const { envId, placeId } = payload;
+    socket.join(`env:${envId}:place:${placeId}`);
+  });
+
+  // Handle lobby messages
+  socket.on('lobbyMessage', async (data) => {
+    const { envId, content } = data;
+    await envService.createEnvironmentMessage(envId, user.id, content);
+    io.to(`env:${envId}`)
+      .emit('lobbyMessage', {
+        userId: user.id,
+        username: user.username,
+        content,
+        createdAt: new Date()
+      });
+  });
+
+  // Handle place‐specific messages
+  socket.on('placeMessage', async (data) => {
+    const { envId, placeId, content } = data;
+    await placeService.createPlaceMessage(envId, placeId, user.id, content);
+    io.to(`env:${envId}:place:${placeId}`)
+      .emit('placeMessage', {
+        userId: user.id,
+        username: user.username,
+        content,
+        createdAt: new Date(),
+        placeId
+      });
+  });
+});
+
 // Database 
 pool.getConnection()
   .then(() => {
     console.log("✅ Connected to MySQL database");
-    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+    server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })
   .catch(err => {
     console.error("❌ Database connection error:", err);

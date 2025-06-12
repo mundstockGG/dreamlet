@@ -14,6 +14,8 @@ import {
   kickUser,
   banUser,
   muteUser
+  ,getPlaceView
+  ,deletePlace
 } from '../controllers/environment.controller';
 import { ensureAuth } from '../middlewares/auth.middleware';
 
@@ -33,6 +35,12 @@ router.post('/:id/places/create',             postCreatePlace);
 router.get('/:id/places/:placeId/edit',       getEditPlace);
 router.post('/:id/places/:placeId/edit',      postEditPlace);
 router.post('/:id/places/:placeId/lock',      postTogglePlaceLock);
+
+// View a place
+router.get('/:id/places/:placeId', getPlaceView);
+
+// Delete a place
+router.post('/:id/places/:placeId/delete', deletePlace);
 
 // Moderation
 router.post('/:id/members/:memberId/promote', promoteUser);

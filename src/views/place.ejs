@@ -1,0 +1,29 @@
+<%- include('partials/header', { title, username }) %>
+
+<div class="container page-content">
+  <h4>
+    <%= env.name %> &raquo; <%= place.emoji %> <%= place.name %>
+  </h4>
+
+  <div class="mb-4">
+    <!-- Placeholder for chat area -->
+    <p class="text-muted">Chat for this place will go here.</p>
+  </div>
+
+  <!-- Delete button (owner/mod only) -->
+  <% if (env.owner_id === session.user.id || ['owner','moderator'].includes(session.role)) { %>
+    <form
+      action="/environments/<%= env.id %>/places/<%= place.id %>/delete"
+      method="POST"
+      onsubmit="return confirm('Delete place “<%= place.name %>”?');"
+    >
+      <button class="btn btn-danger">Delete Place</button>
+    </form>
+  <% } %>
+
+  <a href="/environments/<%= env.id %>" class="btn btn-secondary mt-3">
+    ← Back to Environment
+  </a>
+</div>
+
+<%- include('partials/footer') %>

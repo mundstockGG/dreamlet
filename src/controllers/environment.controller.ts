@@ -255,3 +255,64 @@ export async function postTogglePlaceLock(req: Request, res: Response) {
   }
   res.redirect(`/environments/${envId}`);
 }
+
+// GET /environments/:id/places/:placeId
+export async function getPlaceView(req: Request, res: Response) {
+  const userId  = req.session.user!.id;
+  const envId   = Number(req.params.id);
+  const placeId = Number(req.params.placeId);
+
+  // 1) Env exists & user is member?
+  const env = await envService.getEnvironmentById(envId);
+  if (!env) return res.redirect('/environments');
+  const role = await envService.getMemberRole(userId, envId);
+  if (!role) return res.status(403).send('Unauthorized');
+
+  // 2) Load the place
+  const place = await placeService.getPlaceById(placeId);
+  if (!place || place.envId !== envId) {
+    return res.redirect(`/environments/${envId}`);
+  }
+
+  // 3) Render a simple view
+  res.render('place', {
+    title: `${env.name} → ${place.name}`,
+    username: req.session.user!.username,
+    env,
+    place,
+    error: null,
+    session: {
+      user: req.session.user,
+      role
+    }
+  });
+}
+
+// POST /environments/:id/places/:placeId/delete
+export async function deletePlace(req: Request, res: Response) {
+  const userId  = req.session.user!.id;
+  const envId   = Number(req.params.id);
+  const placeId = Number(req.params.placeId);
+
+  try {
+    // Only owners or moderators can delete
+    const env  = await envService.getEnvironmentById(envId);
+    const role = await envService.getMemberRole(userId, envId);
+    if (!env || (role !== 'owner' && role !== 'moderator')) {
+      throw new Error('Unauthorized');
+    }
+
+    // Don't delete the Lobby
+    const place = await placeService.getPlaceById(placeId);
+    if (place?.name === 'Lobby') {
+      throw new Error('Cannot delete the Lobby');
+    }
+
+    await placeService.deletePlace(placeId);
+    req.flash('success', 'Place deleted');
+  } catch (err: any) {
+    req.flash('error', err.message);
+  }
+
+  res.redirect(`/environments/${envId}`);
+}

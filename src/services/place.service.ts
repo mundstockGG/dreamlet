@@ -101,3 +101,13 @@ export async function updatePlaceLock(placeId: number, isLocked: boolean) {
     [isLocked ? 1 : 0, placeId]
   );
 }
+
+/**
+ * Delete a place by its ID.
+ */
+export async function deletePlace(placeId: number) {
+  await pool.execute(
+    `DELETE FROM places WHERE id = ?`,
+    [placeId]
+  );
+}

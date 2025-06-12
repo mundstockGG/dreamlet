@@ -1,3 +1,35 @@
+/** Fetch all messages for a place chat */
+export async function getPlaceMessages(placeId: number) {
+  const [rows] = await pool.execute<any[]>(
+    `SELECT
+       m.id,
+       m.user_id    AS userId,
+       u.username,
+       m.content,
+       m.created_at AS createdAt
+     FROM messages m
+     JOIN users u ON u.id = m.user_id
+     WHERE m.place_id = ?
+     ORDER BY m.created_at ASC`,
+    [placeId]
+  );
+  return rows;
+}
+
+/** Post a new message into a place chat */
+export async function createPlaceMessage(
+  envId: number,
+  placeId: number,
+  userId: number,
+  content: string
+) {
+  await pool.execute(
+    `INSERT INTO messages
+       (environment_id, place_id, user_id, content)
+     VALUES (?,?,?,?)`,
+    [envId, placeId, userId, content]
+  );
+}
 import pool from '../models/db.model';
 
 export interface PlaceRow {

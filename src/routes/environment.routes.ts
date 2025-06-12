@@ -1,48 +1,58 @@
 import { Router } from 'express';
+import { ensureAuth } from '../middlewares/auth.middleware';
 import {
   getEnvironments,
+  getJoinEnvironment,
   postCreateEnvironment,
   joinEnvironment,
   leaveEnvironment,
   getManageEnvironment,
-  postCreatePlace,
-  getEditPlace,
-  postEditPlace,
-  postTogglePlaceLock,
+  getChat,
+  postChatMessage,
   toggleEnvironmentLock,
   promoteUser,
   kickUser,
   banUser,
-  muteUser
-  ,getPlaceView
-  ,deletePlace
+  muteUser,
+  postCreatePlace     // ← stays here
 } from '../controllers/environment.controller';
-import { ensureAuth } from '../middlewares/auth.middleware';
+import {
+  getPlaceView,
+  postPlaceMessage, // ← NEW
+  getEditPlace,
+  postEditPlace,
+  postTogglePlaceLock,
+  deletePlace
+} from '../controllers/place.controller';
 
 const router = Router();
 router.use(ensureAuth);
 
-router.get('/',             getEnvironments);
-router.post('/create',      postCreateEnvironment);
-router.post('/join',        joinEnvironment);
-router.post('/:id/leave',   leaveEnvironment);
+// Environment list & create
+router.get('/',            getEnvironments);
+router.get('/join',        getJoinEnvironment);
+router.post('/create',     postCreateEnvironment);
+router.post('/join',       joinEnvironment);
+router.post('/:id/leave',  leaveEnvironment);
 
-router.get('/:id',          getManageEnvironment);
-router.post('/:id/lock',    toggleEnvironmentLock);
+// Manage & settings
+router.get('/:id',         getManageEnvironment);
+router.post('/:id/lock',   toggleEnvironmentLock);
 
-// Places
-router.post('/:id/places/create',             postCreatePlace);
-router.get('/:id/places/:placeId/edit',       getEditPlace);
-router.post('/:id/places/:placeId/edit',      postEditPlace);
-router.post('/:id/places/:placeId/lock',      postTogglePlaceLock);
+// Lobby chat
+router.get('/:id/chat',         getChat);
+router.post('/:id/chat/send',   postChatMessage);
 
-// View a place
-router.get('/:id/places/:placeId', getPlaceView);
-
-// Delete a place
+// Places as sub‐chats:
+router.post('/:id/places', postCreatePlace);              // create a new place
+router.get('/:id/places/:placeId',       getPlaceView);   // show that place’s chat
+router.post('/:id/places/:placeId/send', postPlaceMessage); // post into that place’s chat
+router.get('/:id/places/:placeId/edit',  getEditPlace);
+router.post('/:id/places/:placeId/edit', postEditPlace);
+router.post('/:id/places/:placeId/lock', postTogglePlaceLock);
 router.post('/:id/places/:placeId/delete', deletePlace);
 
-// Moderation
+// Moderation (owner only)
 router.post('/:id/members/:memberId/promote', promoteUser);
 router.post('/:id/members/:memberId/kick',    kickUser);
 router.post('/:id/members/:memberId/ban',     banUser);

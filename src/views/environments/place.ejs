@@ -11,7 +11,7 @@
   </div>
 
   <!-- Delete button (owner/mod only) -->
-  <% if (env.owner_id === session.user.id || ['owner','moderator'].includes(session.role)) { %>
+  <% if (env.ownerId === user.id || ['owner','moderator'].includes(role)) { %>
     <form
       action="/environments/<%= env.id %>/places/<%= place.id %>/delete"
       method="POST"

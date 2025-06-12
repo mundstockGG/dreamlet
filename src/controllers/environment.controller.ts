@@ -1,122 +1,143 @@
 import { Request, Response } from 'express';
-// Use require here too:
-const { validationResult } = require('express-validator');
-import * as envService   from '../services/environment.service';
+import * as envService from '../services/environment.service';
 import * as placeService from '../services/place.service';
 
-// Tier limits
-const BASIC_ENV_LIMIT = 3;
-
+// 1️⃣ List “My Environments”
 export async function getEnvironments(req: Request, res: Response) {
   const userId = req.session.user!.id;
-  const envs = await envService.findByUser(userId);
-  res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: null });
+  const envs   = await envService.findByUser(userId);
+  res.render('environments/environments', {
+    title: 'My Environments',
+    username: req.session.user!.username,
+    environments: envs,
+    error: null
+  });
 }
 
-// ─── Create Environment ──────────────────────────────────────
-export async function postCreateEnvironment(req: Request, res: Response) {
-  // 1) validation
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    req.flash('error', errors.array().map((e: any) => e.msg).join('; '));
-    return res.redirect('/environments');
-  }
-
-  const userId     = req.session.user!.id;
-  const { name, is_nsfw, tags, difficulty } = req.body;
-
-  try {
-    // 2) Enforce basic tier env limit
-    if (req.session.user!.tier === 'basic') {
-      const count = await envService.countEnvironmentsByUser(userId);
-      if (count >= BASIC_ENV_LIMIT) {
-        throw new Error(`Basic tier allows only ${BASIC_ENV_LIMIT} environments`);
-      }
-    }
-
-    // 3) Create environment (w/ lobby & membership)
-    await envService.createEnvironment({
-      ownerId:  userId,
-      name,
-      isNSFW:   Boolean(is_nsfw),
-      difficulty,
-      tags:     (tags as string).split(',').map(t => t.trim()).filter(Boolean)
-    });
-
-    req.flash('success', 'Environment created successfully');
-    res.redirect('/environments');
-  } catch (err: any) {
-    req.flash('error', err.message);
-    res.redirect('/environments');
-  }
+// 2️⃣ Show Join‐by‐Code form
+export async function getJoinEnvironment(req: Request, res: Response) {
+  const error = req.flash('error');
+  res.render('environment/join', {
+    title: 'Join Environment',
+    username: req.session.user!.username,
+    error: error[0] || null
+  });
 }
 
-// ─── Join Environment ───────────────────────────────────────
+// 3️⃣ Handle Join POST → redirect to lobby chat
 export async function joinEnvironment(req: Request, res: Response) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    req.flash('error', errors.array().map((e: any) => e.msg).join('; '));
-    return res.redirect('/environments');
-  }
-
   const userId = req.session.user!.id;
-  const code = req.body.inviteCode?.trim();
+  const code   = (req.body.inviteCode as string || '').trim();
   try {
     await envService.joinEnvironment(userId, code);
-    res.redirect('/environments');
+    // Now fetch env to get ID
+    const env = await envService.getEnvironmentByInviteCode(code);
+    res.redirect(`/environments/${env!.id}/chat`);
   } catch (err: any) {
-    const envs = await envService.findByUser(userId);
-    res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
+    req.flash('error', err.message);
+    res.redirect('/environments/join');
   }
 }
 
+// 4️⃣ Create Environment
+export async function postCreateEnvironment(req: Request, res: Response) {
+  const userId   = req.session.user!.id;
+  const { name, is_nsfw, difficulty, tags } = req.body;
+  try {
+    await envService.createEnvironment({
+      ownerId: userId,
+      name,
+      isNSFW: Boolean(is_nsfw),
+      difficulty,
+      tags: (tags as string).split(',').map(t=>t.trim()).filter(Boolean)
+    });
+    req.flash('success','Environment created');
+  } catch (err: any) {
+    req.flash('error', err.message);
+  }
+  res.redirect('/environments');
+}
+
+// 5️⃣ Leave
 export async function leaveEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
-  const envId = Number(req.params.id);
+  const envId  = Number(req.params.id);
   try {
     await envService.leaveEnvironment(userId, envId);
-    res.redirect('/environments');
+    req.flash('success','Left environment');
   } catch (err: any) {
-    const envs = await envService.findByUser(userId);
-    res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
+    req.flash('error', err.message);
   }
+  res.redirect('/environments');
 }
 
+// 6️⃣ Manage Environment (settings + places + members)
 export async function getManageEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
-  const envId = Number(req.params.id);
-  const env = await envService.getEnvironmentById(envId);
+  const envId  = Number(req.params.id);
+  const env     = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
-  const isMember = await envService.isUserMember(userId, envId);
+
+  const isMember = await envService.getMemberRole(userId, envId);
   if (!isMember) return res.redirect('/environments');
+
   const [members, places] = await Promise.all([
     envService.getMembers(envId),
     placeService.getPlaces(envId)
   ]);
-  res.render('environments/environment', { title: `Manage: ${env.name}`, username: req.session.user!.username, env, members, places, error: null });
+
+  res.render('environments/environment', {
+    title: `Manage: ${env.name}`,
+    username: req.session.user!.username,
+    env,
+    members,
+    places,
+    error: null
+  });
 }
 
-export async function postCreatePlace(req: Request, res: Response) {
+// 7️⃣ Lobby Chat GET
+export async function getChat(req: Request, res: Response) {
   const userId = req.session.user!.id;
-  const envId = Number(req.params.id);
-  const { name, emoji, parentId } = req.body;
-  try {
-    await placeService.createPlace(
-      envId,
-      name,
-      emoji,
-      parentId ? Number(parentId) : null
-    );
-    res.redirect(`/environments/${envId}`);
-  } catch (err: any) {
-    const env = await envService.getEnvironmentById(envId);
-    const members = await envService.getMembers(envId);
-    const places = await placeService.getPlaces(envId);
-    res.render('environments/environment', { title: `Manage: ${env?.name}`, username: req.session.user!.username, env, members, places, error: err.message });
-  }
+  const envId  = Number(req.params.id);
+
+  const env = await envService.getEnvironmentById(envId);
+  if (!env) return res.redirect('/environments');
+  const role = await envService.getMemberRole(userId, envId);
+  if (!role) return res.redirect('/environments');
+
+  const [members, places, messages] = await Promise.all([
+    envService.getMembers(envId),
+    placeService.getPlaces(envId),
+    envService.getEnvironmentMessages(envId)
+  ]);
+
+  res.render('environment/chat', {
+    title: `${env.name} · Lobby`,
+    username: req.session.user!.username,
+    env,
+    members,
+    places,
+    messages,
+    activePlaceId: null // Ensure this is always defined for EJS
+  });
 }
 
-// ─── Environment Lock ──────────────────────────────────────
+// 8️⃣ Lobby Chat POST
+export async function postChatMessage(req: Request, res: Response) {
+  const userId = req.session.user!.id;
+  const envId  = Number(req.params.id);
+  const content = (req.body.message as string || '').trim();
+
+  try {
+    await envService.createEnvironmentMessage(envId, userId, content);
+  } catch (err:any) {
+    req.flash('error', err.message);
+  }
+  res.redirect(`/environments/${envId}/chat`);
+}
+
+// 9️⃣ Moderation & Locking (owner only)…
 export async function toggleEnvironmentLock(req: Request, res: Response) {
   const envId  = Number(req.params.id);
   const userId = req.session.user!.id;
@@ -125,8 +146,6 @@ export async function toggleEnvironmentLock(req: Request, res: Response) {
   await envService.updateLockState(envId, !env.isLocked);
   res.redirect(`/environments/${envId}`);
 }
-
-// ─── Member Moderation ─────────────────────────────────────
 export async function promoteUser(req: Request, res: Response) {
   const envId    = Number(req.params.id);
   const ownerId  = req.session.user!.id;
@@ -167,152 +186,19 @@ export async function muteUser(req: Request, res: Response) {
   res.redirect(`/environments/${envId}`);
 }
 
-// Place edit/lock handlers (use placeService for updates)
-export async function getEditPlace(req: Request, res: Response) {
-  const userId  = req.session.user!.id;
-  const envId   = Number(req.params.id);
-  const placeId = Number(req.params.placeId);
-
-  // 1. Check env exists & membership
-  const env  = await envService.getEnvironmentById(envId);
-  if (!env) return res.redirect('/environments');
-
-  const role = await envService.getMemberRole(userId, envId);
-  if (!role) return res.status(403).send('Unauthorized');
-
-  // 2. Load the place
-  const place = await placeService.getPlaceById(placeId);
-  if (!place || place.envId !== envId) {
-    return res.redirect(`/environments/${envId}`);
-  }
-
-  if (role !== 'owner' && role !== 'moderator') {
-    req.flash('error', 'Only owners or moderators may edit places');
-    return res.redirect(`/environments/${envId}`);
-  }
-
-  // 3. Load all places for the “parent” dropdown
-  const places = await placeService.getPlaces(envId);
-
-  // 4. Render
-  res.render('environments/edit-place', {
-    title: `Edit Place: ${place.name}`,
-    username: req.session.user!.username,
-    env,
-    place,
-    places,
-    error: null
-  });
-}
-
-export async function postEditPlace(req: Request, res: Response) {
-  const userId  = req.session.user!.id;
-  const envId   = Number(req.params.id);
-  const placeId = Number(req.params.placeId);
+// Create a new place (sub-chat)
+export async function postCreatePlace(req: Request, res: Response) {
+  const userId = req.session.user!.id;
+  const envId = Number(req.params.id);
   const { name, emoji, parentId } = req.body;
 
   try {
-    const place = await placeService.getPlaceById(placeId);
-    if (!place || place.envId !== envId) throw new Error('Place not found');
-
     const role = await envService.getMemberRole(userId, envId);
-    if (role !== 'owner' && role !== 'moderator') {
-      throw new Error('Unauthorized');
-    }
-
-    await placeService.updatePlace(
-      placeId,
-      name,
-      emoji,
-      parentId ? Number(parentId) : null
-    );
-
-    req.flash('success', 'Place updated');
+    if (role !== 'owner' && role !== 'moderator') throw new Error('Unauthorized');
+    await placeService.createPlace(envId, name, emoji, parentId ? Number(parentId) : null);
+    req.flash('success', 'Place created');
   } catch (err: any) {
     req.flash('error', err.message);
   }
-  res.redirect(`/environments/${envId}`);
-}
-
-export async function postTogglePlaceLock(req: Request, res: Response) {
-  const userId  = req.session.user!.id;
-  const envId   = Number(req.params.id);
-  const placeId = Number(req.params.placeId);
-
-  try {
-    const place = await placeService.getPlaceById(placeId);
-    if (!place || place.envId !== envId) throw new Error('Place not found');
-
-    const role = await envService.getMemberRole(userId, envId);
-    if (role !== 'owner' && role !== 'moderator') {
-      throw new Error('Unauthorized');
-    }
-
-    await placeService.updatePlaceLock(placeId, !place.isLocked);
-    req.flash('success', 'Place lock toggled');
-  } catch (err: any) {
-    req.flash('error', err.message);
-  }
-  res.redirect(`/environments/${envId}`);
-}
-
-// GET /environments/:id/places/:placeId
-export async function getPlaceView(req: Request, res: Response) {
-  const userId  = req.session.user!.id;
-  const envId   = Number(req.params.id);
-  const placeId = Number(req.params.placeId);
-
-  // 1) Env exists & user is member?
-  const env = await envService.getEnvironmentById(envId);
-  if (!env) return res.redirect('/environments');
-  const role = await envService.getMemberRole(userId, envId);
-  if (!role) return res.status(403).send('Unauthorized');
-
-  // 2) Load the place
-  const place = await placeService.getPlaceById(placeId);
-  if (!place || place.envId !== envId) {
-    return res.redirect(`/environments/${envId}`);
-  }
-
-  // 3) Render a simple view
-  res.render('environments/place', {
-    title: `${env.name} → ${place.name}`,
-    username: req.session.user!.username,
-    env,
-    place,
-    error: null,
-    session: {
-      user: req.session.user,
-      role
-    }
-  });
-}
-
-// POST /environments/:id/places/:placeId/delete
-export async function deletePlace(req: Request, res: Response) {
-  const userId  = req.session.user!.id;
-  const envId   = Number(req.params.id);
-  const placeId = Number(req.params.placeId);
-
-  try {
-    // Only owners or moderators can delete
-    const env  = await envService.getEnvironmentById(envId);
-    const role = await envService.getMemberRole(userId, envId);
-    if (!env || (role !== 'owner' && role !== 'moderator')) {
-      throw new Error('Unauthorized');
-    }
-
-    // Don't delete the Lobby
-    const place = await placeService.getPlaceById(placeId);
-    if (place?.name === 'Lobby') {
-      throw new Error('Cannot delete the Lobby');
-    }
-
-    await placeService.deletePlace(placeId);
-    req.flash('success', 'Place deleted');
-  } catch (err: any) {
-    req.flash('error', err.message);
-  }
-
   res.redirect(`/environments/${envId}`);
 }

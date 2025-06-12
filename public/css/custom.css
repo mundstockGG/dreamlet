@@ -1,3 +1,12 @@
+/* Environment Chat: Only update text color for places list */
+.environment-chat-places .list-group-item,
+.environment-chat-places .list-group-item a {
+  color: #212529 !important;
+}
+.environment-chat-places .list-group-item.active,
+.environment-chat-places .list-group-item.active a {
+  color: #FCFCFC !important;
+}
 /* Align pricing card price numbers at the same vertical position */
 .pricing-card-body {
   display: flex;

@@ -69,9 +69,6 @@
             <%= p.emoji %> <%= p.name %> <% if (p.parentName) { %><small>in <%= p.parentName %></small><% } %>
           </span>
           <span>
-            <a href="/environments/<%= env.id %>/places/<%= p.id %>" class="btn btn-sm btn-place-action" title="<%= t.environment.view %>">
-              <%= t.environment.view %>
-            </a>
             <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="<%= t.environment.edit %>">
               <%= t.environment.edit %>
             </a>

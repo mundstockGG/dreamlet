@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import session from "express-session";
+import MySQLStoreFactory from "express-mysql-session";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import pool from "./models/db.model";
@@ -18,11 +19,21 @@ const publicPath = path.join(process.cwd(), "public");
 app.use(express.static(publicPath)); // Static files
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
+
+const MySQLStore = MySQLStoreFactory(session);
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: sessionStore
   })
 );
 app.use(i18nMiddleware);

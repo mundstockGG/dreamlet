@@ -3,14 +3,14 @@ import { registerUser, findUserByUsername } from '../services/auth.service';
 import bcrypt from 'bcrypt';
 
 export const getLogin = (req: Request, res: Response) => {
-  res.render('login', { title: 'Login', username: req.session.user?.username, error: null });
+  res.render('auth/login', { title: 'Login', username: req.session.user?.username, error: null });
 };
 
 export const postLogin = async (req: Request, res: Response) => {
   const { username, password, rememberMe } = req.body;
   const user = await findUserByUsername(username);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-    return res.render('login', { title: 'Login', username: req.session.user?.username, error: 'Invalid credentials' });
+    return res.render('auth/login', { title: 'Login', username: req.session.user?.username, error: 'Invalid credentials' });
   }
   req.session.user = { id: user.id, username: user.username };
   // Set session cookie maxAge if rememberMe is checked
@@ -23,7 +23,7 @@ export const postLogin = async (req: Request, res: Response) => {
 };
 
 export const getRegister = (req: Request, res: Response) => {
-  res.render('register', { title: 'Register', username: req.session.user?.username, error: null });
+  res.render('auth/register', { title: 'Register', username: req.session.user?.username, error: null });
 };
 
 export const postRegister = async (req: Request, res: Response) => {
@@ -33,7 +33,7 @@ export const postRegister = async (req: Request, res: Response) => {
     await registerUser(username, email, hashed);
     res.redirect('/login');
   } catch {
-    res.render('register', { title: 'Register', username: req.session.user?.username, error: 'Username or email already exists' });
+    res.render('auth/register', { title: 'Register', username: req.session.user?.username, error: 'Username or email already exists' });
   }
 };
 

@@ -10,7 +10,7 @@ const BASIC_ENV_LIMIT = 3;
 export async function getEnvironments(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envs = await envService.findByUser(userId);
-  res.render('environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: null });
+  res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: null });
 }
 
 // ─── Create Environment ──────────────────────────────────────
@@ -66,7 +66,7 @@ export async function joinEnvironment(req: Request, res: Response) {
     res.redirect('/environments');
   } catch (err: any) {
     const envs = await envService.findByUser(userId);
-    res.render('environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
+    res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
   }
 }
 
@@ -78,7 +78,7 @@ export async function leaveEnvironment(req: Request, res: Response) {
     res.redirect('/environments');
   } catch (err: any) {
     const envs = await envService.findByUser(userId);
-    res.render('environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
+    res.render('environments/environments', { title: 'My Environments', username: req.session.user!.username, environments: envs, error: err.message });
   }
 }
 
@@ -93,7 +93,7 @@ export async function getManageEnvironment(req: Request, res: Response) {
     envService.getMembers(envId),
     placeService.getPlaces(envId)
   ]);
-  res.render('environment', { title: `Manage: ${env.name}`, username: req.session.user!.username, env, members, places, error: null });
+  res.render('environments/environment', { title: `Manage: ${env.name}`, username: req.session.user!.username, env, members, places, error: null });
 }
 
 export async function postCreatePlace(req: Request, res: Response) {
@@ -112,7 +112,7 @@ export async function postCreatePlace(req: Request, res: Response) {
     const env = await envService.getEnvironmentById(envId);
     const members = await envService.getMembers(envId);
     const places = await placeService.getPlaces(envId);
-    res.render('environment', { title: `Manage: ${env?.name}`, username: req.session.user!.username, env, members, places, error: err.message });
+    res.render('environments/environment', { title: `Manage: ${env?.name}`, username: req.session.user!.username, env, members, places, error: err.message });
   }
 }
 
@@ -195,7 +195,7 @@ export async function getEditPlace(req: Request, res: Response) {
   const places = await placeService.getPlaces(envId);
 
   // 4. Render
-  res.render('edit-place', {
+  res.render('environments/edit-place', {
     title: `Edit Place: ${place.name}`,
     username: req.session.user!.username,
     env,
@@ -275,7 +275,7 @@ export async function getPlaceView(req: Request, res: Response) {
   }
 
   // 3) Render a simple view
-  res.render('place', {
+  res.render('environments/place', {
     title: `${env.name} → ${place.name}`,
     username: req.session.user!.username,
     env,

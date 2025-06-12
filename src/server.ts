@@ -5,6 +5,7 @@ import session from "express-session";
 import MySQLStoreFactory from "express-mysql-session";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
+import newsRoutes from "./routes/news.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
 import flash from "express-flash";
@@ -46,7 +47,7 @@ app.use((req, res, next) => {
 // Terms and Conditions page
 app.get("/terms", (req, res) => {
   const lang = res.locals.lang === "es" ? "es" : "en";
-  res.render(`terms.${lang}.ejs`, {
+  res.render(`terms/terms.${lang}`, {
     title: res.locals.t.footer_terms,
     username: req.session.user?.username,
     lang,
@@ -58,10 +59,13 @@ app.get("/terms", (req, res) => {
 app.use("/", authRoutes);
 app.use("/environments", environmentRoutes);
 
+// News (from Markdown files)
+app.use(newsRoutes);
+
 // Home (hero)
 app.get("/", (req, res) => {
   const user = req.session.user as undefined | { id: number; username: string };
-  res.render("hero", {
+  res.render("main/hero", {
     title: res.locals.t.hero && res.locals.t.hero.title ? res.locals.t.hero.title[0] : "Home",
     username: user ? user.username : undefined,
     lang: res.locals.lang,
@@ -72,27 +76,52 @@ app.get("/", (req, res) => {
 // Dashboard
 app.get("/dashboard", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
-  res.render("dashboard", { title: "Dashboard", username: req.session.user.username });
+  res.render("environments/dashboard", {
+    title: res.locals.t.dashboard_title || "Dashboard",
+    username: req.session.user.username,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // Pricing
 app.get("/pricing", (req, res) => {
-  res.render("pricing", { title: "Pricing", username: req.session.user ? req.session.user.username : undefined });
+  res.render("main/pricing", {
+    title: "Pricing",
+    username: req.session.user ? req.session.user.username : undefined,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // News
 app.get("/news", (req, res) => {
-  res.render("news", { title: "News", username: req.session.user ? req.session.user.username : undefined });
+  res.render("main/news", {
+    title: "News",
+    username: req.session.user ? req.session.user.username : undefined,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // Contact
 app.get("/contact", (req, res) => {
-  res.render("contact", { title: "Contact", username: req.session.user ? req.session.user.username : undefined });
+  res.render("main/contact", {
+    title: "Contact",
+    username: req.session.user ? req.session.user.username : undefined,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // Changelog
 app.get("/changelog", (req, res) => {
-  res.render("changelog", { title: "Changelog", username: req.session.user ? req.session.user.username : undefined });
+  res.render("main/changelog", {
+    title: "Changelog",
+    username: req.session.user ? req.session.user.username : undefined,
+    lang: res.locals.lang,
+    t: res.locals.t
+  });
 });
 
 // Database 
@@ -102,6 +131,6 @@ pool.getConnection()
     app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })
   .catch(err => {
-    console.error("❌ DB connection error:", err);
+    console.error("❌ Database connection error:", err);
     process.exit(1);
   });

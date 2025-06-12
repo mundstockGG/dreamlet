@@ -1,0 +1,23 @@
+<%- include('../partials/header', { title: 'News', username }) %>
+
+<main class="page-content container">
+  <h1 class="display-4 mb-4 text-center"><%= t.news.title %></h1>
+  <p class="lead text-muted text-center mb-5"><%= t.news.subtitle %></p>
+
+  <div class="news-grid">
+    <% newsList.forEach(item => { %>
+      <a href="/news/<%= item.slug %>" class="news-card">
+        <div class="news-card-img"
+             style="background-image:url('<%= item.banner %>')"></div>
+        <div class="news-card-body">
+          <div class="news-card-date"><%= item.date %></div>
+          <div class="news-card-title"><%= item.title %></div>
+          <div class="news-card-excerpt"><%= item.description %></div>
+          <div class="news-card-link">Read more →</div>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

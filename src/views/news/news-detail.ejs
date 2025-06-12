@@ -1,0 +1,19 @@
+<%- include('../partials/header', { title: newsItem.title, username }) %>
+
+<main class="page-content container">
+  <a href="/news" class="text-secondary mb-3 d-inline-block">&larr; Back to News</a>
+
+  <div class="terms-article">
+    <div class="fly-in-text fly-pretitle mb-3">
+      <% newsItem.date.split(' ').forEach(w => { %><li><%= w %></li><% }) %>
+    </div>
+
+    <h1><%= newsItem.title %></h1>
+    <img src="<%= newsItem.banner %>" alt="" style="width:100%;border-radius:8px;margin:1rem 0;">
+
+    <!-- Rendered markdown HTML -->
+    <%- newsItem.html %>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

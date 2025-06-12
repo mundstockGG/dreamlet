@@ -261,13 +261,22 @@ body {
     100% { transform: translate(5%,0) }
 }
 
+/* Add margin-bottom to separate containers from the footer */
+/* Default container style */
 .container {
     max-width: 1200px;
     width: 100%;
     box-sizing: border-box;
     padding-left: 2rem;
     padding-right: 2rem;
+    margin-bottom: 50px; /* Ensures 50px space above the footer */
     /* Remove margin-top here, now handled by .page-content */
+}
+
+/* Remove margin-bottom for container inside .footer and .navbar */
+.footer .container,
+nav.navbar .container {
+    margin-bottom: 0 !important;
 }
 
 .page-content {
@@ -583,6 +592,7 @@ a:hover {
   .footer {
     font-size: 0.95rem;
     padding: 1rem 0.5rem;
+    margin-bottom: 0 !important;
   }
   .navbar-nav {
     text-align: left;
@@ -609,6 +619,7 @@ a:hover {
   }
   .footer {
     font-size: 0.9rem;
+    margin-bottom: 0 !important;
   }
 }
 .fly-in-text.fly-pretitle {

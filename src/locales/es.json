@@ -99,7 +99,10 @@
         "title": "Ingresar",
         "form": {
             "email": "Correo",
+            "username": "Nombre de usuario",
+            "username_placeholder": "Escribe tu nombre de usuario",
             "password": "Contraseña",
+            "password_placeholder": "Escribe tu contraseña",
             "submit": "Ingresar",
             "forgot_password": "¿Olvidaste tu contraseña?",
             "rememberMe": "Recuérdame",

@@ -97,6 +97,7 @@
         "title": "Login",
         "form": {
             "email": "Email",
+            "username": "Username",
             "password": "Password",
             "submit": "Login",
             "forgot_password": "Forgot Password?",

@@ -45,11 +45,10 @@ app.use((req, res, next) => {
 
 // Terms and Conditions page
 app.get("/terms", (req, res) => {
-  const lang = res.locals.lang || "en";
-  const termsView = lang === "es" ? "terms.es" : "terms.en";
-  res.render(termsView, {
+  const lang = res.locals.lang === "es" ? "es" : "en";
+  res.render(`terms.${lang}.ejs`, {
     title: res.locals.t.footer_terms,
-    username: req.session.user ? req.session.user.username : undefined,
+    username: req.session.user?.username,
     lang,
     t: res.locals.t
   });

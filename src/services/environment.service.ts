@@ -11,6 +11,7 @@ export interface Environment {
   tags: string[];
   ownerId: number;
   createdAt: string;
+  isOwner?: boolean;
 }
 
 export interface Member {

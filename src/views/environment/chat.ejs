@@ -5,17 +5,19 @@
 <div class="d-flex" style="height: calc(100vh - 64px);">
   
   <!-- 1️⃣ LEFT: Places List -->
-  <nav class="border-end p-3 environment-chat-places" style="width:20%; overflow-y:auto;">
+  <nav class="border-end p-3 environment-chat-places d-flex flex-column" style="width:20%; overflow-y:auto; height:100%;">
     <h6>Places</h6>
-    <ul class="list-group">
+    <ul class="list-group flex-grow-1">
       <!-- Lobby link -->
-      <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>">
-        <a href="#" class="lobby-link text-decoration-none">💬 Lobby</a>
+      <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>" style="padding:0; position:relative;">
+        <a href="#" class="lobby-link text-decoration-none d-flex align-items-center w-100 h-100" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
+          💬 Lobby
+        </a>
       </li>
       <% function renderPlaces(parentId, level) { %>
         <% places.filter(p => (p.parentId || 0) === (parentId || 0)).forEach(p => { %>
-          <li class="list-group-item place-tree-level-<%= level %> <%= activePlaceId===p.id ? 'active' : '' %>" data-parent-id="<%= p.parentId %>">
-            <a href="#" class="place-link text-decoration-none" data-place-id="<%= p.id %>">
+          <li class="list-group-item place-tree-level-<%= level %> <%= activePlaceId===p.id ? 'active' : '' %>" data-parent-id="<%= p.parentId %>" style="padding:0; position:relative;">
+            <a href="#" class="place-link text-decoration-none d-flex align-items-center w-100 h-100" data-place-id="<%= p.id %>" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
               <%= p.emoji %> <%= p.name %>
             </a>
           </li>
@@ -24,10 +26,15 @@
       <% } %>
       <% renderPlaces(null, 0); %>
     </ul>
+    <div class="d-grid mt-3">
+      <a href="/environments" class="btn btn-outline-danger">
+        <i class="bi bi-door-open me-1"></i>Go Back to Environments
+      </a>
+    </div>
   </nav>
 
   <!-- 2️⃣ CENTER: Chat History + Input -->
-  <main class="flex-grow-1 d-flex flex-column p-3" style="overflow: hidden;">
+  <main class="flex-grow-1 d-flex flex-column p-3 position-relative" style="overflow: hidden;">
     <!-- Chat history -->
     <div id="chat-history" class="flex-grow-1 overflow-auto mb-3">
       <% messages.forEach(msg => { %>

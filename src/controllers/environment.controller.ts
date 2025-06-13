@@ -6,6 +6,10 @@ import * as placeService from '../services/place.service';
 export async function getEnvironments(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envs   = await envService.findByUser(userId);
+  // Mark environments owned by the user
+  envs.forEach(env => {
+    env.isOwner = env.ownerId === userId;
+  });
   res.render('environments/environments', {
     title: 'My Environments',
     username: req.session.user!.username,
@@ -43,6 +47,12 @@ export async function joinEnvironment(req: Request, res: Response) {
 export async function postCreateEnvironment(req: Request, res: Response) {
   const userId   = req.session.user!.id;
   const { name, is_nsfw, difficulty, tags } = req.body;
+  console.log('[DEBUG] postCreateEnvironment called');
+  console.log('[DEBUG] userId:', userId);
+  console.log('[DEBUG] name:', name);
+  console.log('[DEBUG] is_nsfw:', is_nsfw);
+  console.log('[DEBUG] difficulty:', difficulty);
+  console.log('[DEBUG] tags:', tags);
   try {
     await envService.createEnvironment({
       ownerId: userId,
@@ -53,6 +63,7 @@ export async function postCreateEnvironment(req: Request, res: Response) {
     });
     req.flash('success','Environment created');
   } catch (err: any) {
+    console.error('[DEBUG] Error in postCreateEnvironment:', err);
     req.flash('error', err.message);
   }
   res.redirect('/environments');

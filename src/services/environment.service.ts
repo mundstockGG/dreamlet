@@ -243,12 +243,12 @@ export async function getEnvironmentMessages(envId: number): Promise<Message[]> 
 }
 
 export async function createEnvironmentMessage(
-  envId: number, userId: number, content: string
+  envId: number, userId: number, content: string, type: 'chat' | 'action' = 'chat'
 ) {
   await pool.execute(
     `INSERT INTO messages
-       (environment_id, place_id, user_id, content)
-     VALUES (?, NULL, ?, ?)`,
-    [envId, userId, content]
+       (environment_id, place_id, user_id, content, type)
+     VALUES (?, NULL, ?, ?, ?)`,
+    [envId, userId, content, type]
   );
 }

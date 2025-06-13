@@ -19,13 +19,14 @@ export async function createPlaceMessage(
   envId: number,
   placeId: number,
   userId: number,
-  content: string
+  content: string,
+  type: 'chat' | 'action' | 'roll' | 'desc' = 'chat'
 ) {
   await pool.execute(
     `INSERT INTO messages
-       (environment_id, place_id, user_id, content)
-     VALUES (?,?,?,?)`,
-    [envId, placeId, userId, content]
+       (environment_id, place_id, user_id, content, type)
+     VALUES (?,?,?,?,?)`,
+    [envId, placeId, userId, content, type]
   );
 }
 import pool from '../models/db.model';

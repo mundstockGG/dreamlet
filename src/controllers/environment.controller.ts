@@ -138,10 +138,15 @@ export async function getChat(req: Request, res: Response) {
 export async function postChatMessage(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
-  const content = (req.body.message as string || '').trim();
-
+  let content = (req.body.message as string || '').trim();
+  let type: 'chat' | 'action' = 'chat';
+  const meMatch = content.match(/^\/me\s+(.+)$/i);
+  if (meMatch) {
+    type = 'action';
+    content = meMatch[1].trim();
+  }
   try {
-    await envService.createEnvironmentMessage(envId, userId, content);
+    await envService.createEnvironmentMessage(envId, userId, content, type);
   } catch (err:any) {
     req.flash('error', err.message);
   }

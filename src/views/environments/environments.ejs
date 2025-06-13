@@ -34,7 +34,7 @@
             <a href="/environments/<%= env.id %>/chat" class="btn btn-primary btn-sm me-2">
               <i class="bi bi-play-fill me-1"></i>Play
             </a>
-            <a href="/environments/<%= env.id %>" class="btn btn-secondary btn-sm">
+            <a href="/environments/<%= env.id %>" class="btn btn-secondary btn-sm" <% if (!env.isOwner) { %>style="display:none;"<% } %>>
               <i class="bi bi-gear-fill me-1"></i><%= t.environments.manage %>
             </a>
             <form action="/environments/<%= env.id %>/leave" method="POST" style="display:inline-block; margin-left:0.5rem;">
@@ -57,9 +57,9 @@
     <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createEnvModal">
       <i class="bi bi-plus-lg me-1"></i><%= t.environments.create_new %>
     </button>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinEnvModal">
+    <a href="/environments/join" class="btn btn-success">
       <i class="bi bi-people-fill me-1"></i><%= t.environments.join %>
-    </button>
+    </a>
   </div>
 
   <!-- Create Environment Modal -->
@@ -99,27 +99,6 @@
               </select>
             </div>
             <button type="submit" class="btn btn-primary"><%= t.environments.create %></button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- NEW: Join Environment Modal -->
-  <div class="modal fade" id="joinEnvModal" tabindex="-1" aria-labelledby="joinEnvModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content bg-dark text-light">
-        <div class="modal-header">
-          <h5 class="modal-title" id="joinEnvModalLabel"><%= t.environments.join %></h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form action="/environments/join" method="POST">
-            <div class="mb-3">
-              <label for="inviteCode" class="form-label"><%= t.environments.invite_code %></label>
-              <input type="text" class="form-control bg-secondary text-light border-0" id="inviteCode" name="inviteCode" placeholder="Enter code" required>
-            </div>
-            <button type="submit" class="btn btn-success"><%= t.environments.join %></button>
           </form>
         </div>
       </div>

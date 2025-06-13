@@ -139,6 +139,73 @@ app.get("/changelog", (req, res) => {
   });
 });
 
+// Helper to parse and execute slash‐commands
+function processCommand(
+  user: { id:number; username:string },
+  envId: number,
+  placeId: number | null,
+  raw: string
+) {
+  const [cmd, ...rest] = raw.trim().split(' ');
+  const arg = rest.join(' ');
+
+  if (cmd === '/roll') {
+    // match NdM or dM
+    const m = arg.match(/^(\d*)d(\d+)$/i);
+    if (!m) {
+      return { type: 'error', content: `Usage: /roll 2d6 or /roll d20` };
+    }
+    const count = parseInt(m[1] || '1', 10);
+    const sides = parseInt(m[2], 10);
+    if (count < 1 || count > 100 || sides < 2 || sides > 1000) {
+      return { type: 'error', content: 'Dice count must be 1–100, sides 2–1000' };
+    }
+    const rolls: number[] = [];
+    for (let i = 0; i < count; i++) {
+      rolls.push(1 + Math.floor(Math.random() * sides));
+    }
+    const total = rolls.reduce((a,b) => a+b, 0);
+    return {
+      type: 'roll',
+      username: user.username,
+      count, sides,
+      rolls,
+      total,
+      placeId,
+      envId
+    };
+  }
+
+  if (cmd === '/me') {
+    if (!arg) {
+      return { type: 'error', content: 'Usage: /me <action>' };
+    }
+    return {
+      type: 'action',
+      username: user.username,
+      content: arg,
+      placeId,
+      envId
+    };
+  }
+
+  if (cmd === '/do') {
+    if (!arg) {
+      return { type: 'error', content: 'Usage: /do <description>' };
+    }
+    return {
+      type: 'desc',
+      username: user.username,
+      content: arg,
+      placeId,
+      envId
+    };
+  }
+
+  // not a recognized command
+  return null;
+}
+
 // Socket.IO logic:
 io.on('connection', (socket) => {
   // Typing indicator
@@ -175,6 +242,20 @@ io.on('connection', (socket) => {
 
   // Lobby message: only broadcast to lobby (env:<id>)
   socket.on('lobbyMessage', async ({ envId, content }) => {
+    const cmd = processCommand(user, envId, null, content);
+    if (cmd) {
+      if (cmd.type === 'roll') {
+        const { count, sides, rolls, total, username } = cmd;
+        io.to(`env:${envId}`).emit('roll', { username, count, sides, rolls, total });
+      } else if (cmd.type === 'action') {
+        io.to(`env:${envId}`).emit('action', { username: cmd.username, action: cmd.content });
+      } else if (cmd.type === 'desc') {
+        io.to(`env:${envId}`).emit('desc', { username: cmd.username, text: cmd.content });
+      } else if (cmd.type === 'error') {
+        socket.emit('errorMessage', cmd.content);
+      }
+      return;
+    }
     await envService.createEnvironmentMessage(envId, user.id, content);
     io.to(`env:${envId}`)
       .emit('lobbyMessage', {
@@ -186,6 +267,20 @@ io.on('connection', (socket) => {
 
   // Place message: only broadcast to place (env:<id>:place:<placeId>)
   socket.on('placeMessage', async ({ envId, placeId, content }) => {
+    const cmd = processCommand(user, envId, placeId, content);
+    if (cmd) {
+      if (cmd.type === 'roll') {
+        const { count, sides, rolls, total, username } = cmd;
+        io.to(`env:${envId}:place:${placeId}`).emit('roll', { username, count, sides, rolls, total });
+      } else if (cmd.type === 'action') {
+        io.to(`env:${envId}:place:${placeId}`).emit('action', { username: cmd.username, action: cmd.content });
+      } else if (cmd.type === 'desc') {
+        io.to(`env:${envId}:place:${placeId}`).emit('desc', { username: cmd.username, text: cmd.content });
+      } else if (cmd.type === 'error') {
+        socket.emit('errorMessage', cmd.content);
+      }
+      return;
+    }
     await placeService.createPlaceMessage(envId, placeId, user.id, content);
     io.to(`env:${envId}:place:${placeId}`)
       .emit('placeMessage', {

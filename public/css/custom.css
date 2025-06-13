@@ -271,7 +271,7 @@ body {
     align-items: stretch;
 }
 
-.bg {
+.hero .bg {
   position: fixed;
   top: -50%;
   left: -50%;
@@ -284,6 +284,7 @@ body {
   animation: bg-animation .2s infinite;
   opacity: .9;
   visibility: visible;
+  z-index: 0;
 }
 
 @keyframes bg-animation {
@@ -759,4 +760,9 @@ a:hover {
 .card .hljs.diff .hljs-meta {
   background: #e6f4ff;
   color: #1a4a7a;
+}
+
+.footer {
+  z-index: 10;
+  position: relative;
 }

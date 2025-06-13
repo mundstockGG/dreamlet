@@ -35,7 +35,7 @@
               <i class="bi bi-play-fill me-1"></i>Play
             </a>
             <a href="/environments/<%= env.id %>" class="btn btn-secondary btn-sm">
-              <%= t.environments.manage %>
+              <i class="bi bi-gear-fill me-1"></i><%= t.environments.manage %>
             </a>
             <form action="/environments/<%= env.id %>/leave" method="POST" style="display:inline-block; margin-left:0.5rem;">
               <button class="btn btn-danger btn-sm" type="submit" <%= env.isOwner 
@@ -91,6 +91,13 @@
               <label for="env-tags" class="form-label"><%= t.environments.tags %></label>
               <input type="text" class="form-control bg-secondary text-light border-0" id="env-tags" name="tags" placeholder="fantasy, medieval, adventure">
             </div>
+            <div class="mb-3">
+              <label for="envDifficulty" class="form-label">Difficulty</label>
+              <select class="form-select bg-secondary text-light border-0" id="envDifficulty" name="difficulty" required>
+                <option value="chill" selected>Chill</option>
+                <option value="survival">Survival</option>
+              </select>
+            </div>
             <button type="submit" class="btn btn-primary"><%= t.environments.create %></button>
           </form>
         </div>
@@ -118,6 +125,22 @@
       </div>
     </div>
   </div>
+
+  <!-- Add debug JS for create environment form -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var createForm = document.querySelector('form[action="/environments/create"]');
+      if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+          console.log('[DEBUG] Create Environment form submitted');
+          console.log('[DEBUG] Name:', createForm.elements['name'].value);
+          console.log('[DEBUG] Description:', createForm.elements['description'].value);
+          console.log('[DEBUG] NSFW:', createForm.elements['is_nsfw'].checked);
+          console.log('[DEBUG] Tags:', createForm.elements['tags'].value);
+        });
+      }
+    });
+  </script>
 
 </div>
 

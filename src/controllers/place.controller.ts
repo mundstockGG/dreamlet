@@ -1,9 +1,7 @@
-// ...existing code...
 import { Request, Response } from 'express';
 import * as envService   from '../services/environment.service';
 import * as placeService from '../services/place.service';
 
-// ► GET /environments/:id/places/:placeId
 export async function getPlaceView(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);
@@ -20,7 +18,6 @@ export async function getPlaceView(req: Request, res: Response) {
   const place    = await placeService.getPlaceById(placeId);
   if (!place || place.envId !== envId) return res.redirect(`/environments/${envId}/chat`);
 
-  // **NEW** load messages for this place
   const messages = await placeService.getPlaceMessages(placeId);
 
   res.render('environment/chat', {
@@ -34,7 +31,6 @@ export async function getPlaceView(req: Request, res: Response) {
   });
 }
 
-// ► POST /environments/:id/places/:placeId/send
 export async function postPlaceMessage(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);
@@ -49,7 +45,6 @@ export async function postPlaceMessage(req: Request, res: Response) {
   res.redirect(`/environments/${envId}/places/${placeId}`);
 }
 
-// Show the “Edit Place” form
 export async function getEditPlace(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);
@@ -80,7 +75,6 @@ export async function getEditPlace(req: Request, res: Response) {
   });
 }
 
-// Apply edits to a place
 export async function postEditPlace(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);
@@ -107,7 +101,6 @@ export async function postEditPlace(req: Request, res: Response) {
   res.redirect(`/environments/${envId}`);
 }
 
-// Toggle place lock
 export async function postTogglePlaceLock(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);
@@ -128,7 +121,6 @@ export async function postTogglePlaceLock(req: Request, res: Response) {
   res.redirect(`/environments/${envId}`);
 }
 
-// Delete a place
 export async function deletePlace(req: Request, res: Response) {
   const userId  = req.session.user!.id;
   const envId   = Number(req.params.id);

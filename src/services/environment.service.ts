@@ -29,9 +29,6 @@ export interface Message {
   createdAt: string;
 }
 
-/**
- * All environments the user belongs to.
- */
 export async function findByUser(userId: number): Promise<Environment[]> {
   const [rows] = await pool.execute<any[]>(
     `SELECT e.id,
@@ -55,9 +52,6 @@ export async function findByUser(userId: number): Promise<Environment[]> {
   }));
 }
 
-/**
- * Single environment by ID.
- */
 export async function getEnvironmentById(envId: number): Promise<Environment|null> {
   const [rows] = await pool.execute<any[]>(
     `SELECT id,
@@ -80,9 +74,6 @@ export async function getEnvironmentById(envId: number): Promise<Environment|nul
   };
 }
 
-/**
- * Look up an environment by its invite code.
- */
 export async function getEnvironmentByInviteCode(code: string): Promise<Environment|null> {
   const [rows] = await pool.execute<any[]>(
     `SELECT id,
@@ -105,9 +96,6 @@ export async function getEnvironmentByInviteCode(code: string): Promise<Environm
   };
 }
 
-/**
- * Create new environment + auto‐lobby + join owner.
- */
 export async function createEnvironment(opts: {
   ownerId: number;
   name: string;
@@ -127,7 +115,6 @@ export async function createEnvironment(opts: {
 
   const envId = result.insertId;
 
-  // Owner as member/owner
   await pool.execute(
     `INSERT INTO environment_members
        (user_id,environment_id,role)
@@ -135,17 +122,10 @@ export async function createEnvironment(opts: {
     [opts.ownerId, envId]
   );
 
-  // Auto‐create Lobby as a message buffer (no DB row)
-  // Lobby chat is the environment itself—no place row needed.
-
   return envId;
 }
 
-/**
- * Join by invite code.
- */
 export async function joinEnvironment(userId: number, code: string) {
-  // Owner already joined; check ban
   const [ban] = await pool.execute<any[]>(
     `SELECT 1 FROM environment_bans
       WHERE environment_id = (
@@ -156,7 +136,6 @@ export async function joinEnvironment(userId: number, code: string) {
   );
   if (ban.length) throw new Error('You are banned');
 
-  // Insert membership
   await pool.execute(
     `INSERT INTO environment_members
        (user_id,environment_id,role)
@@ -167,9 +146,6 @@ export async function joinEnvironment(userId: number, code: string) {
   );
 }
 
-/**
- * Leave environment.
- */
 export async function leaveEnvironment(userId: number, envId: number) {
   await pool.execute(
     `DELETE FROM environment_members
@@ -179,9 +155,6 @@ export async function leaveEnvironment(userId: number, envId: number) {
   );
 }
 
-/**
- * All members in an environment.
- */
 export async function getMembers(envId: number): Promise<Member[]> {
   const [rows] = await pool.execute<any[]>(
     `SELECT u.id,
@@ -196,9 +169,6 @@ export async function getMembers(envId: number): Promise<Member[]> {
   return rows;
 }
 
-/**
- * A user’s role in this environment.
- */
 export async function getMemberRole(userId: number, envId: number): Promise<string|null> {
   const env = await getEnvironmentById(envId);
   if (env?.ownerId === userId) return 'owner';
@@ -211,7 +181,6 @@ export async function getMemberRole(userId: number, envId: number): Promise<stri
   return rows[0]?.role || null;
 }
 
-/** Moderation actions **/
 export async function promoteMember(envId: number, userId: number) {
   await pool.execute(
     `UPDATE environment_members
@@ -248,7 +217,6 @@ export async function toggleMuteMember(envId: number, userId: number) {
   );
 }
 
-/** Lock/unlock environment **/
 export async function updateLockState(envId: number, isLocked: boolean) {
   await pool.execute(
     `UPDATE environments
@@ -258,7 +226,6 @@ export async function updateLockState(envId: number, isLocked: boolean) {
   );
 }
 
-/** Lobby chat messages **/
 export async function getEnvironmentMessages(envId: number): Promise<Message[]> {
   const [rows] = await pool.execute<any[]>(
     `SELECT m.id,

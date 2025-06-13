@@ -19,22 +19,17 @@ export const getChangelog = (req: Request, res: Response) => {
         const { data, content } = matter(fileContent);
         let htmlContent;
         if (filename.endsWith('.diff.md')) {
-          // Check for ```diff code block
         const diffBlockMatch = content.match(/```diff\s*([\s\S]*?)```/i);
           if (diffBlockMatch) {
-            // Render as highlighted diff code block
             const code = diffBlockMatch[1].trim();
             const highlighted = hljs.highlight(code, { language: 'diff' }).value;
             htmlContent = `<pre><code class="hljs diff">${highlighted}</code></pre>`;
           } else {
-            // Fallback: try to render as unified diff
             htmlContent = `<div class='diff2html-wrapper'>${diff2html(content, { drawFileList: false, matching: 'lines', outputFormat: 'line-by-line' })}</div>`;
           }
         } else {
-          // Render as regular markdown
           htmlContent = marked(content);
         }
-        // Add footer always outside the diff2html wrapper for visibility
         htmlContent += '<div class="text-end mt-3"><small>by mundstock</small></div>';
         return {
           ...data,

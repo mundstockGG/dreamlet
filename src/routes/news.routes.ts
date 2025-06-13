@@ -16,7 +16,6 @@ interface NewsItem {
 const router = Router();
 const mdDir = path.join(process.cwd(), 'public', 'markdown');
 
-// Load & parse all Markdown files once on startup
 const newsList: NewsItem[] = fs
   .readdirSync(mdDir)
   .filter((f) => f.endsWith('.md'))
@@ -25,7 +24,6 @@ const newsList: NewsItem[] = fs
     const raw = fs.readFileSync(path.join(mdDir, filename), 'utf-8');
     const { data, content } = matter(raw);
 
-    // Convert Markdown to HTML (cast to string to satisfy NewsItem.html)
     const htmlString = marked.parse(content) as string;
 
     return {
@@ -42,7 +40,6 @@ const newsList: NewsItem[] = fs
       new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-// List view
 router.get(
   '/news',
   (req: Request, res: Response, next: NextFunction) => {
@@ -56,7 +53,6 @@ router.get(
   }
 );
 
-// Detail view
 router.get(
   '/news/:slug',
   (req: Request, res: Response, next: NextFunction) => {

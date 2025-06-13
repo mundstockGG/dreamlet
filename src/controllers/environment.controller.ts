@@ -2,11 +2,9 @@ import { Request, Response } from 'express';
 import * as envService from '../services/environment.service';
 import * as placeService from '../services/place.service';
 
-// 1️⃣ List “My Environments”
 export async function getEnvironments(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envs   = await envService.findByUser(userId);
-  // Mark environments owned by the user
   envs.forEach(env => {
     env.isOwner = env.ownerId === userId;
   });
@@ -18,7 +16,6 @@ export async function getEnvironments(req: Request, res: Response) {
   });
 }
 
-// 2️⃣ Show Join‐by‐Code form
 export async function getJoinEnvironment(req: Request, res: Response) {
   const error = req.flash('error');
   res.render('environment/join', {
@@ -28,17 +25,14 @@ export async function getJoinEnvironment(req: Request, res: Response) {
   });
 }
 
-// 3️⃣ Handle Join POST → redirect to lobby chat
 export async function joinEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const code   = (req.body.inviteCode as string || '').trim();
   try {
-    // 1) Look up the env by code (includes isLocked now)
     const env = await envService.getEnvironmentByInviteCode(code);
     if (!env) throw new Error('Invalid invite code');
     if (env.isLocked) throw new Error('This environment is locked. You cannot join right now.');
 
-    // 2) Only now actually join
     await envService.joinEnvironment(userId, code);
     res.redirect(`/environments/${env.id}/chat`);
   } catch (err: any) {
@@ -50,7 +44,6 @@ export async function joinEnvironment(req: Request, res: Response) {
   }
 }
 
-// 4️⃣ Create Environment
 export async function postCreateEnvironment(req: Request, res: Response) {
   const userId   = req.session.user!.id;
   const { name, is_nsfw, difficulty, tags } = req.body;
@@ -76,7 +69,6 @@ export async function postCreateEnvironment(req: Request, res: Response) {
   res.redirect('/environments');
 }
 
-// 5️⃣ Leave
 export async function leaveEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
@@ -89,14 +81,12 @@ export async function leaveEnvironment(req: Request, res: Response) {
   res.redirect('/environments');
 }
 
-// 6️⃣ Manage Environment (settings + places + members)
 export async function getManageEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
   const env     = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
 
-  // Only allow owner to access manage page
   if (env.ownerId !== userId) return res.redirect('/environments');
 
   const isMember = await envService.getMemberRole(userId, envId);
@@ -119,7 +109,6 @@ export async function getManageEnvironment(req: Request, res: Response) {
   });
 }
 
-// 7️⃣ Lobby Chat GET
 export async function getChat(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
@@ -142,11 +131,10 @@ export async function getChat(req: Request, res: Response) {
     members,
     places,
     messages,
-    activePlaceId: null // Ensure this is always defined for EJS
+    activePlaceId: null
   });
 }
 
-// 8️⃣ Lobby Chat POST
 export async function postChatMessage(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
@@ -160,7 +148,6 @@ export async function postChatMessage(req: Request, res: Response) {
   res.redirect(`/environments/${envId}/chat`);
 }
 
-// 9️⃣ Moderation & Locking (owner only)…
 export async function toggleEnvironmentLock(req: Request, res: Response) {
   const envId  = Number(req.params.id);
   const userId = req.session.user!.id;
@@ -209,7 +196,6 @@ export async function muteUser(req: Request, res: Response) {
   res.redirect(`/environments/${envId}`);
 }
 
-// Create a new place (sub-chat)
 export async function postCreatePlace(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId = Number(req.params.id);

@@ -13,11 +13,10 @@ export const postLogin = async (req: Request, res: Response) => {
     return res.render('auth/login', { title: 'Login', username: req.session.user?.username, error: 'Invalid credentials' });
   }
   req.session.user = { id: user.id, username: user.username };
-  // Set session cookie maxAge if rememberMe is checked
   if (rememberMe) {
-    req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
   } else {
-    req.session.cookie.expires = undefined; // Session cookie (expires on browser close)
+    req.session.cookie.expires = undefined;
   }
   res.redirect('/dashboard');
 };

@@ -21,9 +21,9 @@ const server = http.createServer(app);
 const io = new IOServer(server);
 const PORT = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true })); // Body parser
+app.use(express.urlencoded({ extended: true }));
 const publicPath = path.join(process.cwd(), "public");
-app.use(express.static(publicPath)); // Static files
+app.use(express.static(publicPath));
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
 
@@ -42,7 +42,7 @@ const expressSession = session({
   store: sessionStore
 });
 app.use(expressSession);
-// Share session data with socket handlers:
+
 try {
   const sharedSession = require("express-socket.io-session");
   io.use(sharedSession(expressSession, { autoSave: true }));
@@ -56,7 +56,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Terms and Conditions page
 app.get("/terms", (req, res) => {
   const lang = res.locals.lang === "es" ? "es" : "en";
   res.render(`terms/terms.${lang}`, {
@@ -67,17 +66,13 @@ app.get("/terms", (req, res) => {
   });
 });
 
-// Auth and environment routes
 app.use("/", authRoutes);
 app.use("/environments", environmentRoutes);
 
-// News (from Markdown files)
 app.use(newsRoutes);
 
-// Changelog
 app.use("/", changelogRouter);
 
-// Home (hero)
 app.get("/", (req, res) => {
   const user = req.session.user as undefined | { id: number; username: string };
   res.render("main/hero", {
@@ -88,7 +83,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Dashboard
 app.get("/dashboard", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   res.render("environments/dashboard", {
@@ -99,7 +93,6 @@ app.get("/dashboard", (req, res) => {
   });
 });
 
-// Pricing
 app.get("/pricing", (req, res) => {
   res.render("main/pricing", {
     title: "Pricing",
@@ -109,7 +102,6 @@ app.get("/pricing", (req, res) => {
   });
 });
 
-// News
 app.get("/news", (req, res) => {
   res.render("main/news", {
     title: "News",
@@ -119,7 +111,6 @@ app.get("/news", (req, res) => {
   });
 });
 
-// Contact
 app.get("/contact", (req, res) => {
   res.render("main/contact", {
     title: "Contact",
@@ -129,7 +120,6 @@ app.get("/contact", (req, res) => {
   });
 });
 
-// Changelog
 app.get("/changelog", (req, res) => {
   res.render("main/changelog", {
     title: "Changelog",
@@ -139,9 +129,8 @@ app.get("/changelog", (req, res) => {
   });
 });
 
-// Helper to parse and execute slash‐commands
 function processCommand(
-  user: { id:number; username:string },
+  user: { id: number; username: string },
   envId: number,
   placeId: number | null,
   raw: string
@@ -164,7 +153,7 @@ function processCommand(
     for (let i = 0; i < count; i++) {
       rolls.push(1 + Math.floor(Math.random() * sides));
     }
-    const total = rolls.reduce((a,b) => a+b, 0);
+    const total = rolls.reduce((a, b) => a + b, 0);
     return {
       type: 'roll',
       username: user.username,
@@ -202,21 +191,16 @@ function processCommand(
     };
   }
 
-  // not a recognized command
   return null;
 }
 
-// Socket.IO logic:
 io.on('connection', (socket) => {
-  // Typing indicator
   socket.on('typing', ({ envId, placeId }) => {
     const user = (socket.handshake && (socket.handshake as any).session && (socket.handshake as any).session.user) || {};
     if (!user.username) return;
     if (placeId) {
-      // Place chat
       socket.to(`env:${envId}:place:${placeId}`).emit('showTyping', { username: user.username, envId, placeId });
     } else {
-      // Lobby chat
       socket.to(`env:${envId}`).emit('showTyping', { username: user.username, envId });
     }
   });
@@ -225,22 +209,18 @@ io.on('connection', (socket) => {
     return socket.disconnect();
   }
 
-  // Lobby join: only fetch lobby messages (place_id IS NULL)
   socket.on('joinEnv', async (envId: number) => {
     socket.join(`env:${envId}`);
-    // Only fetch lobby messages (place_id IS NULL)
     const msgs = await envService.getEnvironmentMessages(envId);
     socket.emit('initialLobbyMessages', msgs);
   });
 
-  // Place join: only fetch messages for that place
   socket.on('joinPlace', async ({ envId, placeId }) => {
     socket.join(`env:${envId}:place:${placeId}`);
     const msgs = await placeService.getPlaceMessages(placeId);
     socket.emit('initialPlaceMessages', msgs);
   });
 
-  // Lobby message: only broadcast to lobby (env:<id>)
   socket.on('lobbyMessage', async ({ envId, content }) => {
     const cmd = processCommand(user, envId, null, content);
     if (cmd) {
@@ -265,7 +245,6 @@ io.on('connection', (socket) => {
       });
   });
 
-  // Place message: only broadcast to place (env:<id>:place:<placeId>)
   socket.on('placeMessage', async ({ envId, placeId, content }) => {
     const cmd = processCommand(user, envId, placeId, content);
     if (cmd) {
@@ -292,7 +271,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Database 
 pool.getConnection()
   .then(() => {
     console.log("✅ Connected to MySQL database");

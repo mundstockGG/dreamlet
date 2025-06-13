@@ -1,4 +1,3 @@
-/** Fetch all messages for a place chat */
 export async function getPlaceMessages(placeId: number) {
   const [rows] = await pool.execute<any[]>(
     `SELECT
@@ -16,7 +15,6 @@ export async function getPlaceMessages(placeId: number) {
   return rows;
 }
 
-/** Post a new message into a place chat */
 export async function createPlaceMessage(
   envId: number,
   placeId: number,
@@ -41,9 +39,6 @@ export interface PlaceRow {
   isLocked: boolean;
 }
 
-/**
- * Create a new place in an environment.
- */
 export async function createPlace(
   environmentId: number,
   name: string,
@@ -58,9 +53,6 @@ export async function createPlace(
   );
 }
 
-/**
- * Fetch all places (with parentName) for the manage page.
- */
 export async function getPlaces(environmentId: number) {
   const [rows] = await pool.execute<any[]>(
     `SELECT
@@ -86,9 +78,6 @@ export async function getPlaces(environmentId: number) {
   }));
 }
 
-/**
- * Fetch a single place by its ID.
- */
 export async function getPlaceById(placeId: number): Promise<PlaceRow | null> {
   const [rows] = await pool.execute<any[]>(
     `SELECT
@@ -105,9 +94,6 @@ export async function getPlaceById(placeId: number): Promise<PlaceRow | null> {
   return (rows as PlaceRow[])[0] || null;
 }
 
-/**
- * Update name/emoji/parent of a place.
- */
 export async function updatePlace(
   placeId: number,
   name: string,
@@ -122,9 +108,6 @@ export async function updatePlace(
   );
 }
 
-/**
- * Toggle the lock state of a place.
- */
 export async function updatePlaceLock(placeId: number, isLocked: boolean) {
   await pool.execute(
     `UPDATE places
@@ -134,9 +117,6 @@ export async function updatePlaceLock(placeId: number, isLocked: boolean) {
   );
 }
 
-/**
- * Delete a place by its ID.
- */
 export async function deletePlace(placeId: number) {
   await pool.execute(
     `DELETE FROM places WHERE id = ?`,

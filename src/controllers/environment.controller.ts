@@ -33,13 +33,20 @@ export async function joinEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const code   = (req.body.inviteCode as string || '').trim();
   try {
-    await envService.joinEnvironment(userId, code);
-    // Now fetch env to get ID
+    // 1) Look up the env by code (includes isLocked now)
     const env = await envService.getEnvironmentByInviteCode(code);
-    res.redirect(`/environments/${env!.id}/chat`);
+    if (!env) throw new Error('Invalid invite code');
+    if (env.isLocked) throw new Error('This environment is locked. You cannot join right now.');
+
+    // 2) Only now actually join
+    await envService.joinEnvironment(userId, code);
+    res.redirect(`/environments/${env.id}/chat`);
   } catch (err: any) {
-    req.flash('error', err.message);
-    res.redirect('/environments/join');
+    res.render('environment/join', {
+      title: 'Join Environment',
+      username: req.session.user!.username,
+      error: err.message
+    });
   }
 }
 
@@ -89,6 +96,9 @@ export async function getManageEnvironment(req: Request, res: Response) {
   const env     = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
 
+  // Only allow owner to access manage page
+  if (env.ownerId !== userId) return res.redirect('/environments');
+
   const isMember = await envService.getMemberRole(userId, envId);
   if (!isMember) return res.redirect('/environments');
 
@@ -103,7 +113,9 @@ export async function getManageEnvironment(req: Request, res: Response) {
     env,
     members,
     places,
-    error: null
+    error: null,
+    t: res.locals.t,
+    lang: res.locals.lang
   });
 }
 

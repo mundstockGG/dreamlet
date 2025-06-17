@@ -69,14 +69,16 @@
             <%= p.emoji %> <%= p.name %> <% if (p.parentName) { %><small>in <%= p.parentName %></small><% } %>
           </span>
           <span>
-            <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="<%= t.environment.edit %>">
-              <%= t.environment.edit %>
-            </a>
-            <form action="/environments/<%= env.id %>/places/<%= p.id %>/delete" method="POST" style="display:inline; margin:0;">
-              <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.delete %>" onclick="return confirm('Are you sure you want to delete this place?');">
-                <%= t.environment.delete %>
-              </button>
-            </form>
+            <% if (p.id !== env.id) { %>
+              <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="<%= t.environment.edit %>">
+                <%= t.environment.edit %>
+              </a>
+              <form action="/environments/<%= env.id %>/places/<%= p.id %>/delete" method="POST" style="display:inline; margin:0;">
+                <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.delete %>" onclick="return confirm('Are you sure you want to delete this place?');">
+                  <%= t.environment.delete %>
+                </button>
+              </form>
+            <% } %>
           </span>
         </li>
         <% }) %>
@@ -136,6 +138,22 @@
     <a href="/environments" class="btn btn-secondary mt-4 mb-3">
       <i class="bi bi-arrow-left me-1"></i><%= t.environment.back %>
     </a>
+    <% if (env.isOwner) { %>
+    <form id="delete-env-form" action="/environments/<%= env.id %>/delete" method="POST" class="d-inline-block ms-2">
+      <button type="button" class="btn btn-danger mt-4 mb-3" onclick="showDeleteEnvPrompt()">
+        <i class="bi bi-trash me-1"></i><%= t.environment.delete_environment %>
+      </button>
+      <div id="delete-env-prompt" style="display:none; margin-top:10px;">
+        <p><%= t.environment.confirm_delete_env %> <strong><%= env.name %></strong></p>
+        <input type="text" class="form-control mb-2" id="delete-env-confirm" placeholder="Type environment name to confirm">
+        <button type="submit" class="btn btn-danger" id="delete-env-confirm-btn" disabled><%= t.environment.confirm %></button>
+        <button type="button" class="btn btn-secondary ms-2" onclick="hideDeleteEnvPrompt()"><%= t.environment.cancel %></button>
+      </div>
+    </form>
+    <% } %>
+    <a href="/environments/<%= env.id %>/delete" class="btn btn-danger mt-4 mb-3 ms-2" onclick="return confirm('Are you sure you want to delete this environment? This action cannot be undone.');">
+      <i class="bi bi-trash me-1"></i><%= t.environment.delete_env %>
+    </a>
   </div>
 </div>
 <%- include('../partials/footer') %>
@@ -178,3 +196,23 @@
     }
   });
 </script>
+<script>
+    var envName = <%- JSON.stringify(env.name) %>;
+    function showDeleteEnvPrompt() {
+      document.getElementById('delete-env-prompt').style.display = '';
+    }
+    function hideDeleteEnvPrompt() {
+      document.getElementById('delete-env-prompt').style.display = 'none';
+      document.getElementById('delete-env-confirm').value = '';
+      document.getElementById('delete-env-confirm-btn').disabled = true;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      var input = document.getElementById('delete-env-confirm');
+      var btn = document.getElementById('delete-env-confirm-btn');
+      if (input && btn) {
+        input.addEventListener('input', function() {
+          btn.disabled = (input.value !== envName);
+        });
+      }
+    });
+  </script>

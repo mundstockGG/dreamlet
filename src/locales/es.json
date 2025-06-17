@@ -176,6 +176,7 @@
         "parent": "Lugar padre",
         "top_level": "— Nivel superior —",
         "close": "Cerrar",
-        "back": "Volver a entornos"
+        "back": "Volver a entornos",
+        "delete_env": "Eliminar entorno"
     }
 }

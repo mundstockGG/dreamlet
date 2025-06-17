@@ -172,6 +172,7 @@
         "parent": "Parent Place",
         "top_level": "— Top level —",
         "close": "Close",
-        "back": "Back to Environments"
+        "back": "Back to Environments",
+        "delete_env": "Eliminar entorno"
     }
 }

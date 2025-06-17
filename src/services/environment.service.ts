@@ -124,6 +124,13 @@ export async function createEnvironment(opts: {
     [opts.ownerId, envId]
   );
 
+  // Create lobby place for this environment
+  await pool.execute(
+    `INSERT INTO places (id, environment_id, name, emoji, parent_id)
+     VALUES (?, ?, 'Lobby', '💬', NULL)`,
+    [envId, envId]
+  );
+
   return envId;
 }
 

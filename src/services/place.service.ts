@@ -48,6 +48,10 @@ export async function createPlace(
   emoji: string,
   parentId: number | null
 ) {
+  // Prevent creating a place with id = environmentId (reserved for lobby)
+  if (name.toLowerCase() === 'lobby') {
+    throw new Error('Cannot create a place named "Lobby". The lobby is managed automatically.');
+  }
   await pool.execute(
     `INSERT INTO places
        (environment_id, name, emoji, parent_id)

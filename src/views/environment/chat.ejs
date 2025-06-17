@@ -8,14 +8,17 @@
   <nav class="border-end p-3 environment-chat-places d-flex flex-column" style="width:20%; overflow-y:auto; height:100%;">
     <h6>Places</h6>
     <ul class="list-group flex-grow-1">
-      <!-- Lobby link -->
-      <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>" style="padding:0; position:relative;">
-        <a href="#" class="lobby-link text-decoration-none d-flex align-items-center w-100 h-100" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
-          💬 Lobby
-        </a>
-      </li>
+      <!-- Render lobby place at the top if it exists in places -->
+      <% const lobbyPlace = places && places.find(p => p.id === env.id); %>
+      <% if (lobbyPlace) { %>
+        <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>" style="padding:0; position:relative;">
+          <a href="#" class="lobby-link text-decoration-none d-flex align-items-center w-100 h-100" data-place-id="<%= lobbyPlace.id %>" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
+            <%= lobbyPlace.emoji %> <%= lobbyPlace.name %>
+          </a>
+        </li>
+      <% } %>
       <% function renderPlaces(parentId, level) { %>
-        <% places.filter(p => (p.parentId || 0) === (parentId || 0)).forEach(p => { %>
+        <% places.filter(p => (p.parentId || 0) === (parentId || 0) && p.id !== env.id).forEach(p => { %>
           <li class="list-group-item place-tree-level-<%= level %> <%= activePlaceId===p.id ? 'active' : '' %>" data-parent-id="<%= p.parentId %>" style="padding:0; position:relative;">
             <a href="#" class="place-link text-decoration-none d-flex align-items-center w-100 h-100" data-place-id="<%= p.id %>" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
               <%= p.emoji %> <%= p.name %>

@@ -267,8 +267,20 @@ ALTER TABLE `messages`
 ALTER TABLE `places`
   ADD CONSTRAINT `places_ibfk_1` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `places_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `places` (`id`) ON DELETE SET NULL;
+
+-- Prevent duplicate lobby places: only allow one place with id = environment_id per environment
+ALTER TABLE places
+ADD CONSTRAINT unique_lobby_per_env UNIQUE (id, environment_id);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Migration: Create a lobby place for each environment
+INSERT INTO places (id, environment_id, name, emoji, parent_id)
+SELECT e.id, e.id, 'Lobby', '💬', NULL
+FROM environments e
+LEFT JOIN places p ON p.id = e.id
+WHERE p.id IS NULL;

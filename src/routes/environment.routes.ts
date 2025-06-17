@@ -14,7 +14,9 @@ import {
   kickUser,
   banUser,
   muteUser,
-  postCreatePlace
+  postCreatePlace,
+  getEnvironmentDetail,
+  deleteEnvironmentAuth
 } from '../controllers/environment.controller';
 import {
   getPlaceView,
@@ -34,7 +36,7 @@ router.post('/create',     postCreateEnvironment);
 router.post('/join',       joinEnvironment);
 router.post('/:id/leave',  leaveEnvironment);
 
-router.get('/:id',         getManageEnvironment);
+router.get('/:id',         getEnvironmentDetail);
 router.post('/:id/lock',   toggleEnvironmentLock);
 
 router.get('/:id/chat',         getChat);
@@ -52,5 +54,9 @@ router.post('/:id/members/:memberId/promote', promoteUser);
 router.post('/:id/members/:memberId/kick',    kickUser);
 router.post('/:id/members/:memberId/ban',     banUser);
 router.post('/:id/members/:memberId/mute',    muteUser);
+
+// handle the confirmed delete
+router.post('/:id/delete', deleteEnvironmentAuth);
+router.get('/:id/delete', getEnvironmentDetail); // Add GET route for delete confirmation
 
 export default router;

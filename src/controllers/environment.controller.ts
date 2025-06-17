@@ -101,7 +101,8 @@ export async function getManageEnvironment(req: Request, res: Response) {
   res.render('environments/environment', {
     title: `Manage: ${env.name}`,
     username: req.session.user!.username,
-    env,
+    env, // alias it here
+    environment: env,
     members,
     places,
     error: null,
@@ -228,4 +229,54 @@ export async function postCreatePlace(req: Request, res: Response) {
     req.flash('error', err.message);
   }
   res.redirect(`/environments/${envId}`);
+}
+
+/**
+ * Renders the environment detail page (which now includes the delete-modal markup).
+ */
+export async function getEnvironmentDetail(req: Request, res: Response) {
+  const envId = Number(req.params.id);
+  const environment = await envService.getEnvironmentById(envId);
+  if (!environment) return res.status(404).render('404');
+
+  const members = await envService.getMembers(envId); // Fetch members for the environment
+  res.render('environments/environment', {
+    env: environment, // Renamed to match the view
+    error: req.flash('error'),
+    success: req.flash('success'),
+    username: req.session.user?.username, // Added username to the view data
+    members, // Pass members to the view
+    places: await placeService.getPlaces(envId), // Fetch places for the environment
+    messages: await ChatService.getRecentMessages(envId), // Fetch recent messages for the environment
+  });
+}
+
+/**
+ * POST /environments/:id/delete
+ */
+export async function deleteEnvironmentAuth(req: Request, res: Response) {
+  const userId       = req.session.user!.id;
+  const envId        = Number(req.params.id);
+  const { confirm }  = req.body; // the input named "confirm"
+
+  const env = await envService.getEnvironmentById(envId);
+  if (!env) {
+    req.flash('error', 'Environment not found.');
+    return res.redirect('/environments');
+  }
+  if (env.ownerId !== userId) {
+    req.flash('error', 'Only the owner can delete this environment.');
+    return res.redirect(`/environments/${envId}`);
+  }
+
+  // Check that user typed the exact name
+  if (confirm.trim() !== env.name) {
+    req.flash('error', 'Name does not match. Deletion cancelled.');
+    return res.redirect(`/environments/${envId}`);
+  }
+
+  // OK, delete it
+  await envService.deleteEnvironment(envId);
+  req.flash('success', `Environment “${env.name}” deleted.`);
+  res.redirect('/environments');
 }

@@ -263,3 +263,16 @@ export async function createEnvironmentMessage(
     [envId, userId, content, type]
   );
 }
+
+/**
+ * Deletes an environment by id. All dependent rows cascade via FKs.
+ */
+export async function deleteEnvironment(envId: number): Promise<void> {
+  // Delete dependent rows explicitly
+  await pool.execute(`DELETE FROM environment_members WHERE environment_id = ?`, [envId]);
+  await pool.execute(`DELETE FROM places WHERE environment_id = ?`, [envId]);
+  await pool.execute(`DELETE FROM messages WHERE environment_id = ?`, [envId]);
+
+  // Delete the environment
+  await pool.execute(`DELETE FROM environments WHERE id = ?`, [envId]);
+}

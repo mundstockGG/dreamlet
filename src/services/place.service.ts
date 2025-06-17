@@ -5,6 +5,8 @@ export async function getPlaceMessages(placeId: number) {
        m.user_id    AS userId,
        u.username,
        m.content,
+       m.type,
+       m.action_type,
        m.created_at AS createdAt
      FROM messages m
      JOIN users u ON u.id = m.user_id

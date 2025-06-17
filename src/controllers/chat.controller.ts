@@ -12,23 +12,28 @@ export async function postChatMessage(req: Request, res: Response) {
   }
 
   let type: 'chat'|'action' = 'chat';
-  const m = message.match(/^\/me\s+(.+)$/i);
-  if (m) {
-    type    = 'action';
-    message = m[1].trim();
+  let actionType: 'me'|'do'|'rr'|null = null;
+  let content = message;
+
+  const slash = message.match(/^\/(me|do|rr)\s+(.+)$/i);
+  if (slash) {
+    type = 'action';
+    actionType = slash[1].toLowerCase() as 'me'|'do'|'rr';
+    content = slash[2].trim();
   }
 
-  console.log('POST chat:', { raw:req.body.message, type, message });
+  console.log('POST chat:', { raw:req.body.message, type, actionType, content });
 
   await ChatService.saveMessage({
     environmentId: environment,
     placeId:       place,
     userId:        user.id,
-    content:       message,
-    type
+    content,
+    type,
+    actionType
   });
 
-  res.json({ username: user.username, content: message, type });
+  res.json({ username: user.username, content, type, actionType });
 }
 
 export async function getChatPage(req: Request, res: Response) {

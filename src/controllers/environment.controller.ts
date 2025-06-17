@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as envService from '../services/environment.service';
 import * as placeService from '../services/place.service';
+import { ChatService } from '../services/chat.service';
 
 export async function getEnvironments(req: Request, res: Response) {
   const userId = req.session.user!.id;
@@ -121,7 +122,7 @@ export async function getChat(req: Request, res: Response) {
   const [members, places, messages] = await Promise.all([
     envService.getMembers(envId),
     placeService.getPlaces(envId),
-    envService.getEnvironmentMessages(envId)
+    ChatService.getRecentMessages(envId)
   ]);
 
   res.render('environment/chat', {
@@ -138,18 +139,30 @@ export async function getChat(req: Request, res: Response) {
 export async function postChatMessage(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
-  let content = (req.body.message as string || '').trim();
-  let type: 'chat' | 'action' = 'chat';
-  const meMatch = content.match(/^\/me\s+(.+)$/i);
-  if (meMatch) {
-    type = 'action';
-    content = meMatch[1].trim();
+  const raw    = (req.body.message as string || '').trim();
+
+  // parse slash‐commands
+  let type: 'chat'|'action'         = 'chat';
+  let actionType: 'me'|'do'|'rr'|null = null;
+  let content = raw;
+
+  const slash = raw.match(/^\/(me|do|rr)\s+(.+)$/i);
+  if (slash) {
+    type       = 'action';
+    actionType = slash[1].toLowerCase() as 'me'|'do'|'rr';
+    content    = slash[2].trim();
   }
-  try {
-    await envService.createEnvironmentMessage(envId, userId, content, type);
-  } catch (err:any) {
-    req.flash('error', err.message);
-  }
+
+  // save with ChatService (six columns!)
+  await ChatService.saveMessage({
+    environmentId: envId,
+    placeId:       undefined,
+    userId,
+    content,
+    type,
+    actionType
+  });
+
   res.redirect(`/environments/${envId}/chat`);
 }
 

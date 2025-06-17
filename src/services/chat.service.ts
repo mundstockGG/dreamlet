@@ -6,22 +6,26 @@ export interface SaveMessageOpts {
   userId:        number;
   content:       string;
   type:          'chat'|'action';
+  actionType?:   'me'|'do'|'rr'|null;
 }
 
 export class ChatService {
   static async saveMessage(opts: SaveMessageOpts) {
-    const { environmentId, placeId, userId, content, type } = opts;
+    const { environmentId, placeId, userId, content, type, actionType } = opts;
+    console.log('[ChatService.saveMessage]', {
+      environmentId, placeId, userId, content, type, actionType
+    });
     await pool.query(
       `INSERT INTO messages
-         (environment_id, place_id, user_id, content, \`type\`)
-       VALUES (?,?,?,?,?)`,
-      [environmentId, placeId ?? null, userId, content, type]
+         (environment_id, place_id, user_id, content, \`type\`, action_type)
+       VALUES (?,?,?,?,?,?)`,
+      [environmentId, placeId ?? null, userId, content, type, actionType ?? null]
     );
   }
 
   static async getRecentMessages(environmentId: number, placeId?: number) {
     const [rows] = await pool.query(
-      `SELECT m.id, m.content, m.\`type\`, m.created_at, u.username
+      `SELECT m.id, m.content, m.\`type\`, m.action_type, m.created_at, u.username
          FROM messages m
          JOIN users u ON u.id = m.user_id
         WHERE m.environment_id = ?
@@ -35,6 +39,7 @@ export class ChatService {
       username: string;
       content: string;
       type: 'chat'|'action';
+      action_type?: 'me'|'do'|'rr'|null;
       created_at: string;
     }>;
   }

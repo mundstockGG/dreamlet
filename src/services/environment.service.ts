@@ -26,6 +26,8 @@ export interface Message {
   userId: number;
   username: string;
   content: string;
+  type: 'chat'|'action';
+  actionType?: 'me'|'do'|'rr'|null;
   createdAt: string;
 }
 
@@ -232,12 +234,14 @@ export async function getEnvironmentMessages(envId: number): Promise<Message[]> 
             m.user_id    AS userId,
             u.username,
             m.content,
+            m.type,
+            m.action_type,
             m.created_at AS createdAt
        FROM messages m
        JOIN users u ON u.id = m.user_id
-      WHERE m.environment_id = ? AND m.place_id IS NULL
+      WHERE m.environment_id = ? AND m.place_id = ?
       ORDER BY m.created_at ASC`,
-    [envId]
+    [envId, envId]
   );
   return rows;
 }

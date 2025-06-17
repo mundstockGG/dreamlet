@@ -196,7 +196,6 @@ function processCommand(
 }
 
 io.on('connection', (socket) => {
-  // Attach environmentId/placeId/environmentRoom on join
   socket.on('joinEnv', async (envId: number) => {
     (socket as any).environmentId = envId;
     (socket as any).environmentRoom = `env:${envId}`;
@@ -218,23 +217,27 @@ io.on('connection', (socket) => {
     const user = (socket.request as any).session?.user;
     if (!user) return;
     let type: 'chat'|'action' = 'chat';
+    let actionType: 'me'|'do'|'rr'|null = null;
     let content = raw;
-    const m = raw.match(/^\/me\s+(.+)$/i);
-    if (m) {
-      type    = 'action';
-      content = m[1].trim();
+    const slash = raw.match(/^\/(me|do|rr)\s+(.+)$/i);
+    if (slash) {
+      type = 'action';
+      actionType = slash[1].toLowerCase() as 'me'|'do'|'rr';
+      content = slash[2].trim();
     }
     await ChatService.saveMessage({
       environmentId: (socket as any).environmentId,
       placeId:       (socket as any).placeId,
       userId:        user.id,
       content,
-      type
+      type,
+      actionType
     });
     io.to((socket as any).environmentRoom).emit('chat:receive', {
       username: user.username,
       content,
-      type
+      type,
+      actionType
     });
   });
   socket.on('typing', ({ envId, placeId }) => {
@@ -264,28 +267,56 @@ io.on('connection', (socket) => {
   });
 
   socket.on('lobbyMessage', async ({ envId, content }) => {
-    const cmd = processCommand(user, envId, null, content);
+    const lobbyPlaceId = envId;
+    const cmd = processCommand(user, envId, lobbyPlaceId, content);
     if (cmd) {
       if (cmd.type === 'roll') {
         const { count = 1, sides = 6, rolls = [], total = 0, username } = cmd;
         const rollContent = `/roll ${count}d${sides}: ${Array.isArray(rolls) ? rolls.join(', ') : ''} = ${total}`;
-        await envService.createEnvironmentMessage(envId, user.id, rollContent, 'chat');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId: lobbyPlaceId,
+          userId: user.id,
+          content: rollContent,
+          type: 'chat',
+          actionType: null
+        });
         io.to(`env:${envId}`).emit('roll', { username, count, sides, rolls, total });
       } else if (cmd.type === 'action') {
         const actionContent = typeof cmd.content === 'string' ? cmd.content : '';
-        await envService.createEnvironmentMessage(envId, user.id, actionContent, 'action');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId: lobbyPlaceId,
+          userId: user.id,
+          content: actionContent,
+          type: 'action',
+          actionType: 'me'
+        });
         io.to(`env:${envId}`).emit('action', { username: cmd.username, action: actionContent });
       } else if (cmd.type === 'desc') {
         const descContent = typeof cmd.content === 'string' ? cmd.content : '';
-        // Store /do as 'action' for visibility, or as 'chat' if you prefer
-        await envService.createEnvironmentMessage(envId, user.id, descContent, 'action');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId: lobbyPlaceId,
+          userId: user.id,
+          content: descContent,
+          type: 'action',
+          actionType: 'do'
+        });
         io.to(`env:${envId}`).emit('desc', { username: cmd.username, text: descContent });
       } else if (cmd.type === 'error') {
         socket.emit('errorMessage', cmd.content);
       }
       return;
     }
-    await envService.createEnvironmentMessage(envId, user.id, content, 'chat');
+    await ChatService.saveMessage({
+      environmentId: envId,
+      placeId: lobbyPlaceId,
+      userId: user.id,
+      content,
+      type: 'chat',
+      actionType: null
+    });
     io.to(`env:${envId}`)
       .emit('lobbyMessage', {
         username: user.username,
@@ -300,23 +331,50 @@ io.on('connection', (socket) => {
       if (cmd.type === 'roll') {
         const { count = 1, sides = 6, rolls = [], total = 0, username } = cmd;
         const rollContent = `/roll ${count}d${sides}: ${Array.isArray(rolls) ? rolls.join(', ') : ''} = ${total}`;
-        await placeService.createPlaceMessage(envId, placeId, user.id, rollContent, 'chat');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId,
+          userId: user.id,
+          content: rollContent,
+          type: 'chat',
+          actionType: null
+        });
         io.to(`env:${envId}:place:${placeId}`).emit('roll', { username, count, sides, rolls, total });
       } else if (cmd.type === 'action') {
         const actionContent = typeof cmd.content === 'string' ? cmd.content : '';
-        await placeService.createPlaceMessage(envId, placeId, user.id, actionContent, 'action');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId,
+          userId: user.id,
+          content: actionContent,
+          type: 'action',
+          actionType: 'me'
+        });
         io.to(`env:${envId}:place:${placeId}`).emit('action', { username: cmd.username, action: actionContent });
       } else if (cmd.type === 'desc') {
         const descContent = typeof cmd.content === 'string' ? cmd.content : '';
-        // Store /do as 'action' for visibility, or as 'chat' if you prefer
-        await placeService.createPlaceMessage(envId, placeId, user.id, descContent, 'action');
+        await ChatService.saveMessage({
+          environmentId: envId,
+          placeId,
+          userId: user.id,
+          content: descContent,
+          type: 'action',
+          actionType: 'do'
+        });
         io.to(`env:${envId}:place:${placeId}`).emit('desc', { username: cmd.username, text: descContent });
       } else if (cmd.type === 'error') {
         socket.emit('errorMessage', cmd.content);
       }
       return;
     }
-    await placeService.createPlaceMessage(envId, placeId, user.id, content, 'chat');
+    await ChatService.saveMessage({
+      environmentId: envId,
+      placeId,
+      userId: user.id,
+      content,
+      type: 'chat',
+      actionType: null
+    });
     io.to(`env:${envId}:place:${placeId}`)
       .emit('placeMessage', {
         username: user.username,

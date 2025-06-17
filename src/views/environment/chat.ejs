@@ -38,9 +38,15 @@
     <!-- Chat history -->
     <div id="chat-history" class="flex-grow-1 overflow-auto mb-3">
       <% messages.forEach(msg => { %>
-        <div class="mb-2">
-          <strong><%= msg.username %>:</strong> <%= msg.content %>
-        </div>
+        <% if (msg.type === 'action') { %>
+          <div class="mb-2 chat-action chat-<%= msg.action_type %>">
+            * <%= msg.username %> <%= msg.content %>
+          </div>
+        <% } else { %>
+          <div class="mb-2 chat-normal">
+            <strong><%= msg.username %>:</strong> <%= msg.content %>
+          </div>
+        <% } %>
       <% }) %>
     </div>
 
@@ -251,10 +257,15 @@
       hist.scrollTop = hist.scrollHeight;
     }
 
-    function append({ username, content, createdAt }) {
+    function append({ username, content, type, action_type }) {
       const div = document.createElement('div');
-      div.classList.add('mb-2');
-      div.innerHTML = `<strong>${username}:</strong> ${content}`;
+      if (type === 'action') {
+        div.className = `mb-2 chat-action chat-${action_type || 'me'}`;
+        div.innerHTML = `* ${username} ${content}`;
+      } else {
+        div.className = 'mb-2 chat-normal';
+        div.innerHTML = `<strong>${username}:</strong> ${content}`;
+      }
       hist.appendChild(div);
       hist.scrollTop = hist.scrollHeight;
     }

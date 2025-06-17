@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 192.168.0.176:3306
--- Tiempo de generación: 13-06-2025 a las 20:56:01
+-- Tiempo de generación: 17-06-2025 a las 15:47:18
 -- Versión del servidor: 10.6.22-MariaDB-0ubuntu0.22.04.1
 -- Versión de PHP: 8.2.22
 
@@ -80,10 +80,9 @@ CREATE TABLE `messages` (
   `place_id` int(11) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `content` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `username` varchar(50) DEFAULT NULL,
-  `type` enum('chat','action') NOT NULL,
-  `action_type` enum('me','do','rr') DEFAULT NULL
+  `type` enum('chat','action') NOT NULL DEFAULT 'chat',
+  `action_type` enum('me','do','rr') DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -162,15 +161,17 @@ ALTER TABLE `environment_members`
 --
 ALTER TABLE `messages`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `environment_id` (`environment_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `fk_messages_place` (`place_id`);
+  ADD KEY `idx_environment_id` (`environment_id`),
+  ADD KEY `idx_place_id` (`place_id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_type` (`type`);
 
 --
 -- Indices de la tabla `places`
 --
 ALTER TABLE `places`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_lobby_per_env` (`id`,`environment_id`),
   ADD KEY `environment_id` (`environment_id`),
   ADD KEY `parent_id` (`parent_id`);
 
@@ -256,10 +257,9 @@ ALTER TABLE `environment_members`
 -- Filtros para la tabla `messages`
 --
 ALTER TABLE `messages`
+  ADD CONSTRAINT `fk_messages_environment` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_messages_place` FOREIGN KEY (`place_id`) REFERENCES `places` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`),
-  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`place_id`) REFERENCES `places` (`id`),
-  ADD CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `fk_messages_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Filtros para la tabla `places`
@@ -267,20 +267,8 @@ ALTER TABLE `messages`
 ALTER TABLE `places`
   ADD CONSTRAINT `places_ibfk_1` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `places_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `places` (`id`) ON DELETE SET NULL;
-
--- Prevent duplicate lobby places: only allow one place with id = environment_id per environment
-ALTER TABLE places
-ADD CONSTRAINT unique_lobby_per_env UNIQUE (id, environment_id);
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
--- Migration: Create a lobby place for each environment
-INSERT INTO places (id, environment_id, name, emoji, parent_id)
-SELECT e.id, e.id, 'Lobby', '💬', NULL
-FROM environments e
-LEFT JOIN places p ON p.id = e.id
-WHERE p.id IS NULL;

@@ -1,57 +1,9 @@
 <%- include('../partials/header', { title: 'Home' }) %>
 
-<main>
-  <section class="hero">
-    <div class="bg"></div>
-    <div class="hero-overlay"></div>
-    <div class="container hero-content text-center">
-      <small class="pretitle" style="display:block;">
-        <ul class="fly-in-text hidden" style="display:inline-flex;vertical-align:middle;padding:0;margin:0;">
-          <li>W</li>
-          <li>E</li>
-          <li>L</li>
-          <li>C</li>
-          <li>O</li>
-          <li>M</li>
-          <li>E</li>
-          <li>&nbsp;</li>
-          <li>T</li>
-          <li>O</li>
-        </ul>
-      </small>
-      <h1 class="display-1">
-        <span class="highlight" style="display:inline-block;">
-          <ul class="fly-in-text fly-h1 hidden" style="display:inline-flex;vertical-align:middle;padding:0;margin:0;">
-            <li>d</li>
-            <li>r</li>
-            <li>e</li>
-            <li>a</li>
-            <li>m</li>
-            <li>l</li>
-            <li>e</li>
-            <li>t</li>
-          </ul>
-        </span>
-      </h1>
-      <p class="lead hero-fade-in" style="opacity:0;transition:opacity 1s;">
-        The platform to accelerate your ideas, collaborate with your friends, and turn dreams into reality.<br>
-        Sign up now to get started!
-      </p>
-    </div>
-  </section>
-</main>
+<% if (lang === 'es') { %>
+  <%- include('hero.es.ejs') %>
+<% } else { %>
+  <%- include('hero.en.ejs') %>
+<% } %>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      document.querySelectorAll('.fly-in-text').forEach(function(fly) {
-        fly.classList.remove('hidden');
-      });
-      setTimeout(function() {
-        var fade = document.querySelector('.hero-fade-in');
-        if(fade) fade.style.opacity = 1;
-      }, 500); // 1.4s after flying text
-    }, 500);
-  });
-</script>
 <%- include('../partials/footer') %>

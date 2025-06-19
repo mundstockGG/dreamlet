@@ -16,16 +16,29 @@ interface NewsItem {
 const router = Router();
 const mdDir = path.join(process.cwd(), 'public', 'markdown');
 
-const newsList: NewsItem[] = fs
-  .readdirSync(mdDir)
-  .filter((f) => f.endsWith('.md'))
-  .map((filename) => {
-    const slug = filename.replace(/\.md$/, '');
-    const raw = fs.readFileSync(path.join(mdDir, filename), 'utf-8');
+
+function getAllMarkdownFiles(dir: string): string[] {
+  let results: string[] = [];
+  const list = fs.readdirSync(dir);
+  list.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(getAllMarkdownFiles(filePath));
+    } else if (file.endsWith('.md')) {
+      results.push(filePath);
+    }
+  });
+  return results;
+}
+
+const newsList: NewsItem[] = getAllMarkdownFiles(mdDir)
+  .map((filePath) => {
+    const filename = path.relative(mdDir, filePath);
+    const slug = filename.replace(/\.md$/, '').replace(/\\/g, '/');
+    const raw = fs.readFileSync(filePath, 'utf-8');
     const { data, content } = matter(raw);
-
     const htmlString = marked.parse(content) as string;
-
     return {
       slug,
       title: data.title,

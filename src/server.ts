@@ -1,4 +1,6 @@
 import { ChatService } from './services/chat.service';
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import express from "express";
 import http from "http";
 import { Server as IOServer } from "socket.io";
@@ -18,6 +20,8 @@ import * as placeService from './services/place.service';
 dotenv.config();
 
 const app = express();
+
+app.use(helmet());
 const server = http.createServer(app);
 const io = new IOServer(server);
 const PORT = process.env.PORT || 3000;
@@ -40,9 +44,21 @@ const expressSession = session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: false,
   saveUninitialized: false,
-  store: sessionStore
+  store: sessionStore,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax'
+  }
 });
 app.use(expressSession);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too many login attempts, please try again later."
+});
+app.use(["/login", "/register", "/invite"], authLimiter);
 
 try {
   const sharedSession = require("express-socket.io-session");
@@ -140,7 +156,6 @@ function processCommand(
   const arg = rest.join(' ');
 
   if (cmd === '/roll') {
-    // match NdM or dM
     const m = arg.match(/^(\d*)d(\d+)$/i);
     if (!m) {
       return { type: 'error', content: `Usage: /roll 2d6 or /roll d20` };

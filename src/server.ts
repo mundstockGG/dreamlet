@@ -1,3 +1,4 @@
+// src/server.ts
 import dotenv from "dotenv";
 import path from "path";
 import express from "express";
@@ -13,9 +14,9 @@ import newsRoutes from "./routes/news.routes";
 import changelogRouter from "./routes/changelog.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
-import { ChatService } from './services/chat.service';
-import * as envService from './services/environment.service';
-import * as placeService from './services/place.service';
+import { ChatService } from "./services/chat.service";
+import * as envService from "./services/environment.service";
+import * as placeService from "./services/place.service";
 
 dotenv.config();
 
@@ -30,40 +31,40 @@ app.use(express.static(path.join(process.cwd(), "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
 
-const MySQLStoreFactory = require('express-mysql-session');
+const MySQLStoreFactory = require("express-mysql-session");
 const MySQLStore = MySQLStoreFactory(session);
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
+  host:     process.env.DB_HOST,
+  user:     process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
 });
 
 const expressSession = session({
-  secret: process.env.SESSION_SECRET || "secret",
-  resave: false,
+  secret:           process.env.SESSION_SECRET || "secret",
+  resave:           false,
   saveUninitialized: false,
-  store: sessionStore,
+  store:            sessionStore,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure:   process.env.NODE_ENV === "production",
     httpOnly: true,
-    sameSite: 'lax'
-  }
+    sameSite: "lax",
+  },
 });
 app.use(expressSession);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: "Too many login attempts, please try again later."
+  max:      10,
+  message:  "Too many login attempts, please try again later.",
 });
 app.use(["/login", "/register", "/invite"], authLimiter);
 
 try {
   const sharedSession = require("express-socket.io-session");
   io.use(sharedSession(expressSession, { autoSave: true }));
-} catch (e) {
-  console.warn('express-socket.io-session not installed, skipping socket session sharing.');
+} catch {
+  console.warn("express-socket.io-session not installed; skipping socket session sharing.");
 }
 
 app.use(i18nMiddleware);
@@ -73,76 +74,72 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/terms", (req, res) => {
-  const lang = req.query.lang === 'es' ? 'es' : 'en';
-  res.render(`terms/terms_${lang}`,
-    {
-      username: req.session.user ? req.session.user.username : undefined,
-      lang: res.locals.lang,
-      t: res.locals.t
-    }
-  );
-});
-
-app.use("/", authRoutes);
+app.use("/",             authRoutes);
 app.use("/environments", environmentRoutes);
 app.use(newsRoutes);
-app.use("/", changelogRouter);
+app.use("/",             changelogRouter);
+
+app.get("/terms", (req, res) => {
+  const lang = req.query.lang === "es" ? "es" : "en";
+  res.render(`terms/terms_${lang}`, {
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
+  });
+});
 
 app.get("/", (req, res) => {
-  const lang = res.locals.lang === 'es' ? 'es' : 'en';
-  res.render(`main/hero_${lang}`,
-    {
-      username: req.session.user ? req.session.user.username : undefined,
-      lang: res.locals.lang,
-      t: res.locals.t
-    }
-  );
+  const lang = res.locals.lang === "es" ? "es" : "en";
+  res.render(`main/hero_${lang}`, {
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
+  });
 });
 
 app.get("/dashboard", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
   res.render("environments/dashboard", {
-    title: res.locals.t.dashboard_title || "Dashboard",
+    title:    res.locals.t.dashboard_title || "Dashboard",
     username: req.session.user.username,
-    lang: res.locals.lang,
-    t: res.locals.t
+    lang:     res.locals.lang,
+    t:        res.locals.t,
   });
 });
 
 app.get("/pricing", (req, res) => {
   res.render("main/pricing", {
-    title: "Pricing",
-    username: req.session.user ? req.session.user.username : undefined,
-    lang: res.locals.lang,
-    t: res.locals.t
+    title:    "Pricing",
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
   });
 });
 
 app.get("/news", (req, res) => {
   res.render("main/news", {
-    title: "News",
-    username: req.session.user ? req.session.user.username : undefined,
-    lang: res.locals.lang,
-    t: res.locals.t
+    title:    "News",
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
   });
 });
 
 app.get("/contact", (req, res) => {
   res.render("main/contact", {
-    title: "Contact",
-    username: req.session.user ? req.session.user.username : undefined,
-    lang: res.locals.lang,
-    t: res.locals.t
+    title:    "Contact",
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
   });
 });
 
 app.get("/changelog", (req, res) => {
   res.render("main/changelog", {
-    title: "Changelog",
-    username: req.session.user ? req.session.user.username : undefined,
-    lang: res.locals.lang,
-    t: res.locals.t
+    title:    "Changelog",
+    username: req.session.user?.username,
+    lang:     res.locals.lang,
+    t:        res.locals.t,
   });
 });
 
@@ -152,251 +149,202 @@ function processCommand(
   placeId: number | null,
   raw: string
 ) {
-  const [cmd, ...rest] = raw.trim().split(' ');
-  const arg = rest.join(' ');
+  const [cmd, ...rest] = raw.trim().split(" ");
+  const arg = rest.join(" ");
 
-  if (cmd === '/roll') {
+  if (cmd === "/roll") {
     const m = arg.match(/^(\d*)d(\d+)$/i);
-    if (!m) {
-      return { type: 'error', content: `Usage: /roll 2d6 or /roll d20` };
-    }
-    const count = parseInt(m[1] || '1', 10);
+    if (!m) return { type: "error" as const, content: "Usage: /roll 2d6 or /roll d20" };
+    const count = parseInt(m[1] || "1", 10);
     const sides = parseInt(m[2], 10);
     if (count < 1 || count > 100 || sides < 2 || sides > 1000) {
-      return { type: 'error', content: 'Dice count must be 1–100, sides 2–1000' };
+      return { type: "error" as const, content: "Dice count must be 1–100, sides 2–1000" };
     }
-    const rolls: number[] = [];
-    for (let i = 0; i < count; i++) {
-      rolls.push(1 + Math.floor(Math.random() * sides));
-    }
+    const rolls = Array.from({ length: count }, () => 1 + Math.floor(Math.random() * sides));
     const total = rolls.reduce((a, b) => a + b, 0);
-    return {
-      type: 'roll',
-      username: user.username,
-      count, sides,
-      rolls,
-      total,
-      placeId,
-      envId
-    };
+    return { type: "roll" as const, username: user.username, count, sides, rolls, total, placeId, envId };
   }
 
-  if (cmd === '/me') {
-    if (!arg) {
-      return { type: 'error', content: 'Usage: /me <action>' };
-    }
-    return {
-      type: 'action',
-      username: user.username,
-      content: arg,
-      placeId,
-      envId
-    };
+  if (cmd === "/me") {
+    if (!arg) return { type: "error" as const, content: "Usage: /me <action>" };
+    return { type: "action" as const, username: user.username, content: arg, placeId, envId };
   }
 
-  if (cmd === '/do') {
-    if (!arg) {
-      return { type: 'error', content: 'Usage: /do <description>' };
-    }
-    return {
-      type: 'desc',
-      username: user.username,
-      content: arg,
-      placeId,
-      envId
-    };
+  if (cmd === "/do") {
+    if (!arg) return { type: "error" as const, content: "Usage: /do <description>" };
+    return { type: "desc" as const, username: user.username, content: arg, placeId, envId };
   }
 
   return null;
 }
 
-io.on('connection', (socket) => {
-  socket.on('joinEnv', async (envId: number) => {
-    (socket as any).environmentId = envId;
-    (socket as any).environmentRoom = `env:${envId}`;
+io.on("connection", (socket) => {
+  const session = (socket.handshake as any).session;
+  const user    = session?.user;
+  if (!user) return socket.disconnect();
+
+  socket.on("joinEnv", async (envId: number) => {
     socket.join(`env:${envId}`);
     const msgs = await envService.getEnvironmentMessages(envId);
-    socket.emit('initialLobbyMessages', msgs);
+    socket.emit("initialLobbyMessages", msgs);
   });
 
-  socket.on('joinPlace', async ({ envId, placeId }) => {
-    (socket as any).environmentId = envId;
-    (socket as any).placeId = placeId;
-    (socket as any).environmentRoom = `env:${envId}:place:${placeId}`;
+  socket.on("joinPlace", async ({ envId, placeId }) => {
     socket.join(`env:${envId}:place:${placeId}`);
     const msgs = await placeService.getPlaceMessages(placeId);
-    socket.emit('initialPlaceMessages', msgs);
+    socket.emit("initialPlaceMessages", msgs);
   });
 
-  socket.on('chat:send', async (raw) => {
-    const user = (socket.request as any).session?.user;
-    if (!user) return;
-    let type: 'chat'|'action' = 'chat';
-    let actionType: 'me'|'do'|'rr'|null = null;
+  socket.on("chat:send", async (raw: string) => {
+    let type: "chat" | "action" = "chat";
+    let actionType: "me" | "do" | "rr" | null = null;
     let content = raw;
     const slash = raw.match(/^\/(me|do|rr)\s+(.+)$/i);
     if (slash) {
-      type = 'action';
-      actionType = slash[1].toLowerCase() as 'me'|'do'|'rr';
-      content = slash[2].trim();
+      type       = "action";
+      actionType = slash[1].toLowerCase() as any;
+      content    = slash[2].trim();
     }
     await ChatService.saveMessage({
+      actorId:       user.id,
       environmentId: (socket as any).environmentId,
       placeId:       (socket as any).placeId,
-      userId:        user.id,
       content,
       type,
       actionType
     });
-    io.to((socket as any).environmentRoom).emit('chat:receive', {
+    io.to((socket as any).environmentRoom).emit("chat:receive", {
       username: user.username,
       content,
       type,
       actionType
     });
   });
-  socket.on('typing', ({ envId, placeId }) => {
-    const user = (socket.handshake && (socket.handshake as any).session && (socket.handshake as any).session.user) || {};
+
+  socket.on("typing", ({ envId, placeId }) => {
     if (!user.username) return;
-    if (placeId) {
-      socket.to(`env:${envId}:place:${placeId}`).emit('showTyping', { username: user.username, envId, placeId });
-    } else {
-      socket.to(`env:${envId}`).emit('showTyping', { username: user.username, envId });
-    }
-  });
-  const user = (socket.handshake as any).session?.user;
-  if (!user) {
-    return socket.disconnect();
-  }
-
-  socket.on('joinEnv', async (envId: number) => {
-    socket.join(`env:${envId}`);
-    const msgs = await envService.getEnvironmentMessages(envId);
-    socket.emit('initialLobbyMessages', msgs);
+    const room = placeId ? `env:${envId}:place:${placeId}` : `env:${envId}`;
+    socket.to(room).emit("showTyping", { username: user.username, envId, placeId });
   });
 
-  socket.on('joinPlace', async ({ envId, placeId }) => {
-    socket.join(`env:${envId}:place:${placeId}`);
-    const msgs = await placeService.getPlaceMessages(placeId);
-    socket.emit('initialPlaceMessages', msgs);
-  });
-
-  socket.on('lobbyMessage', async ({ envId, content }) => {
+  socket.on("lobbyMessage", async ({ envId, content }) => {
     const lobbyPlaceId = envId;
-    const cmd = processCommand(user, envId, lobbyPlaceId, content);
+    const cmd          = processCommand(user, envId, lobbyPlaceId, content);
+
     if (cmd) {
-      if (cmd.type === 'roll') {
-        const { count = 1, sides = 6, rolls = [], total = 0, username } = cmd;
-        const rollContent = `/roll ${count}d${sides}: ${Array.isArray(rolls) ? rolls.join(', ') : ''} = ${total}`;
+      if (cmd.type === "roll") {
+        const rollContent = `/roll ${cmd.count}d${cmd.sides}: ${cmd.rolls.join(", ")} = ${cmd.total}`;
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
-          placeId: lobbyPlaceId,
-          userId: user.id,
-          content: rollContent,
-          type: 'chat',
-          actionType: null
+          placeId:       lobbyPlaceId,
+          content:       rollContent,
+          type:          "chat",
+          actionType:    null
         });
-        io.to(`env:${envId}`).emit('roll', { username, count, sides, rolls, total });
-      } else if (cmd.type === 'action') {
-        const actionContent = typeof cmd.content === 'string' ? cmd.content : '';
+        io.to(`env:${envId}`).emit("roll", cmd);
+
+      } else if (cmd.type === "action") {
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
-          placeId: lobbyPlaceId,
-          userId: user.id,
-          content: actionContent,
-          type: 'action',
-          actionType: 'me'
+          placeId:       lobbyPlaceId,
+          content:       cmd.content,
+          type:          "action",
+          actionType:    "me"
         });
-        io.to(`env:${envId}`).emit('action', { username: cmd.username, action: actionContent });
-      } else if (cmd.type === 'desc') {
-        const descContent = typeof cmd.content === 'string' ? cmd.content : '';
+        io.to(`env:${envId}`).emit("action", { username: user.username, action: cmd.content });
+
+      } else if (cmd.type === "desc") {
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
-          placeId: lobbyPlaceId,
-          userId: user.id,
-          content: descContent,
-          type: 'action',
-          actionType: 'do'
+          placeId:       lobbyPlaceId,
+          content:       cmd.content,
+          type:          "action",
+          actionType:    "do"
         });
-        io.to(`env:${envId}`).emit('desc', { username: cmd.username, text: descContent });
-      } else if (cmd.type === 'error') {
-        socket.emit('errorMessage', cmd.content);
+        io.to(`env:${envId}`).emit("desc", { username: user.username, text: cmd.content });
+
+      } else if (cmd.type === "error") {
+        socket.emit("errorMessage", cmd.content);
       }
       return;
     }
+
     await ChatService.saveMessage({
+      actorId:       user.id,
       environmentId: envId,
-      placeId: lobbyPlaceId,
-      userId: user.id,
+      placeId:       lobbyPlaceId,
       content,
-      type: 'chat',
-      actionType: null
+      type:          "chat",
+      actionType:    null
     });
-    io.to(`env:${envId}`)
-      .emit('lobbyMessage', {
-        username: user.username,
-        content,
-        createdAt: Date.now()
-      });
+    io.to(`env:${envId}`).emit("lobbyMessage", {
+      username:  user.username,
+      content,
+      createdAt: Date.now()
+    });
   });
 
-  socket.on('placeMessage', async ({ envId, placeId, content }) => {
+  socket.on("placeMessage", async ({ envId, placeId, content }) => {
     const cmd = processCommand(user, envId, placeId, content);
+
     if (cmd) {
-      if (cmd.type === 'roll') {
-        const { count = 1, sides = 6, rolls = [], total = 0, username } = cmd;
-        const rollContent = `/roll ${count}d${sides}: ${Array.isArray(rolls) ? rolls.join(', ') : ''} = ${total}`;
+      if (cmd.type === "roll") {
+        const rollContent = `/roll ${cmd.count}d${cmd.sides}: ${cmd.rolls.join(", ")} = ${cmd.total}`;
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
           placeId,
-          userId: user.id,
-          content: rollContent,
-          type: 'chat',
-          actionType: null
+          content:       rollContent,
+          type:          "chat",
+          actionType:    null
         });
-        io.to(`env:${envId}:place:${placeId}`).emit('roll', { username, count, sides, rolls, total });
-      } else if (cmd.type === 'action') {
-        const actionContent = typeof cmd.content === 'string' ? cmd.content : '';
+        io.to(`env:${envId}:place:${placeId}`).emit("roll", cmd);
+
+      } else if (cmd.type === "action") {
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
           placeId,
-          userId: user.id,
-          content: actionContent,
-          type: 'action',
-          actionType: 'me'
+          content:       cmd.content,
+          type:          "action",
+          actionType:    "me"
         });
-        io.to(`env:${envId}:place:${placeId}`).emit('action', { username: cmd.username, action: actionContent });
-      } else if (cmd.type === 'desc') {
-        const descContent = typeof cmd.content === 'string' ? cmd.content : '';
+        io.to(`env:${envId}:place:${placeId}`).emit("action", { username: user.username, action: cmd.content });
+
+      } else if (cmd.type === "desc") {
         await ChatService.saveMessage({
+          actorId:       user.id,
           environmentId: envId,
           placeId,
-          userId: user.id,
-          content: descContent,
-          type: 'action',
-          actionType: 'do'
+          content:       cmd.content,
+          type:          "action",
+          actionType:    "do"
         });
-        io.to(`env:${envId}:place:${placeId}`).emit('desc', { username: cmd.username, text: descContent });
-      } else if (cmd.type === 'error') {
-        socket.emit('errorMessage', cmd.content);
+        io.to(`env:${envId}:place:${placeId}`).emit("desc", { username: user.username, text: cmd.content });
+
+      } else if (cmd.type === "error") {
+        socket.emit("errorMessage", cmd.content);
       }
       return;
     }
+
     await ChatService.saveMessage({
+      actorId:       user.id,
       environmentId: envId,
       placeId,
-      userId: user.id,
       content,
-      type: 'chat',
-      actionType: null
+      type:          "chat",
+      actionType:    null
     });
-    io.to(`env:${envId}:place:${placeId}`)
-      .emit('placeMessage', {
-        username: user.username,
-        content,
-        createdAt: Date.now(),
-        placeId
-      });
+    io.to(`env:${envId}:place:${placeId}`).emit("placeMessage", {
+      username:  user.username,
+      content,
+      createdAt: Date.now(),
+      placeId
+    });
   });
 });
 

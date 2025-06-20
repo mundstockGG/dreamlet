@@ -8,12 +8,15 @@ import session from "express-session";
 import http from "http";
 import { Server as IOServer } from "socket.io";
 import flash from "express-flash";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import newsRoutes from "./routes/news.routes";
 import changelogRouter from "./routes/changelog.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
+import { csrfProtection, attachCsrfToken } from "./middlewares/csrf.middleware";
+import { sanitizeBody } from "./middlewares/sanitize.middleware";
 import { ChatService } from "./services/chat.service";
 import * as envService from "./services/environment.service";
 import * as placeService from "./services/place.service";
@@ -52,6 +55,14 @@ const expressSession = session({
   },
 });
 app.use(expressSession);
+
+app.use(cookieParser()); 
+app.use(csrfProtection); 
+app.use(attachCsrfToken);
+
+app.post("*", sanitizeBody);
+app.put("*",  sanitizeBody);
+app.delete("*", sanitizeBody);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -243,7 +254,6 @@ io.on("connection", (socket) => {
           actionType:    null
         });
         io.to(`env:${envId}`).emit("roll", cmd);
-
       } else if (cmd.type === "action") {
         await ChatService.saveMessage({
           actorId:       user.id,
@@ -254,7 +264,6 @@ io.on("connection", (socket) => {
           actionType:    "me"
         });
         io.to(`env:${envId}`).emit("action", { username: user.username, action: cmd.content });
-
       } else if (cmd.type === "desc") {
         await ChatService.saveMessage({
           actorId:       user.id,
@@ -265,7 +274,6 @@ io.on("connection", (socket) => {
           actionType:    "do"
         });
         io.to(`env:${envId}`).emit("desc", { username: user.username, text: cmd.content });
-
       } else if (cmd.type === "error") {
         socket.emit("errorMessage", cmd.content);
       }
@@ -302,7 +310,6 @@ io.on("connection", (socket) => {
           actionType:    null
         });
         io.to(`env:${envId}:place:${placeId}`).emit("roll", cmd);
-
       } else if (cmd.type === "action") {
         await ChatService.saveMessage({
           actorId:       user.id,
@@ -313,7 +320,6 @@ io.on("connection", (socket) => {
           actionType:    "me"
         });
         io.to(`env:${envId}:place:${placeId}`).emit("action", { username: user.username, action: cmd.content });
-
       } else if (cmd.type === "desc") {
         await ChatService.saveMessage({
           actorId:       user.id,
@@ -324,7 +330,6 @@ io.on("connection", (socket) => {
           actionType:    "do"
         });
         io.to(`env:${envId}:place:${placeId}`).emit("desc", { username: user.username, text: cmd.content });
-
       } else if (cmd.type === "error") {
         socket.emit("errorMessage", cmd.content);
       }

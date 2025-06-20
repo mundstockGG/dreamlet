@@ -1,34 +1,32 @@
-import { ChatService } from './services/chat.service';
+import dotenv from "dotenv";
+import path from "path";
+import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import express from "express";
+import session from "express-session";
 import http from "http";
 import { Server as IOServer } from "socket.io";
-import session from "express-session";
-import path from "path";
-import dotenv from "dotenv";
+import flash from "express-flash";
 import authRoutes from "./routes/auth.routes";
 import environmentRoutes from "./routes/environment.routes";
 import newsRoutes from "./routes/news.routes";
 import changelogRouter from "./routes/changelog.routes";
 import pool from "./models/db.model";
 import { i18nMiddleware } from "./middlewares/i18n.middleware";
-import flash from "express-flash";
+import { ChatService } from './services/chat.service';
 import * as envService from './services/environment.service';
 import * as placeService from './services/place.service';
 
 dotenv.config();
 
 const app = express();
-
-app.use(helmet({ contentSecurityPolicy: false }));
 const server = http.createServer(app);
 const io = new IOServer(server);
 const PORT = process.env.PORT || 3000;
 
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.urlencoded({ extended: true }));
-const publicPath = path.join(process.cwd(), "public");
-app.use(express.static(publicPath));
+app.use(express.static(path.join(process.cwd(), "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "src", "views"));
 
@@ -40,6 +38,7 @@ const sessionStore = new MySQLStore({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME
 });
+
 const expressSession = session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: false,
@@ -66,14 +65,13 @@ try {
 } catch (e) {
   console.warn('express-socket.io-session not installed, skipping socket session sharing.');
 }
+
 app.use(i18nMiddleware);
 app.use(flash());
 app.use((req, res, next) => {
   console.log("Request:", req.method, req.originalUrl);
   next();
 });
-
-
 
 app.get("/terms", (req, res) => {
   const lang = req.query.lang === 'es' ? 'es' : 'en';
@@ -88,12 +86,8 @@ app.get("/terms", (req, res) => {
 
 app.use("/", authRoutes);
 app.use("/environments", environmentRoutes);
-
 app.use(newsRoutes);
-
 app.use("/", changelogRouter);
-
-
 
 app.get("/", (req, res) => {
   const lang = res.locals.lang === 'es' ? 'es' : 'en';

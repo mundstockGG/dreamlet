@@ -400,12 +400,16 @@ io.on('connection', (socket) => {
   });
 });
 
-pool.getConnection()
-  .then(() => {
-    console.log("✅ Connected to MySQL database");
-    server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error("❌ Database connection error:", err);
-    process.exit(1);
-  });
+if (require.main === module) {
+  pool.getConnection()
+    .then(() => {
+      console.log("✅ Connected to MySQL database");
+      server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+    })
+    .catch(err => {
+      console.error("❌ Database connection error:", err);
+      process.exit(1);
+    });
+}
+
+export default app;

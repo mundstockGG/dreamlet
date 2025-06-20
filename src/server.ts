@@ -21,7 +21,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 const server = http.createServer(app);
 const io = new IOServer(server);
 const PORT = process.env.PORT || 3000;
@@ -73,14 +73,17 @@ app.use((req, res, next) => {
   next();
 });
 
+
+
 app.get("/terms", (req, res) => {
-  const lang = res.locals.lang === "es" ? "es" : "en";
-  res.render(`terms/terms.${lang}`, {
-    title: res.locals.t.footer_terms,
-    username: req.session.user?.username,
-    lang,
-    t: res.locals.t
-  });
+  const lang = req.query.lang === 'es' ? 'es' : 'en';
+  res.render(`terms/terms_${lang}`,
+    {
+      username: req.session.user ? req.session.user.username : undefined,
+      lang: res.locals.lang,
+      t: res.locals.t
+    }
+  );
 });
 
 app.use("/", authRoutes);
@@ -90,14 +93,17 @@ app.use(newsRoutes);
 
 app.use("/", changelogRouter);
 
+
+
 app.get("/", (req, res) => {
-  const user = req.session.user as undefined | { id: number; username: string };
-  res.render("main/hero", {
-    title: res.locals.t.hero && res.locals.t.hero.title ? res.locals.t.hero.title[0] : "Home",
-    username: user ? user.username : undefined,
-    lang: res.locals.lang,
-    t: res.locals.t
-  });
+  const lang = res.locals.lang === 'es' ? 'es' : 'en';
+  res.render(`main/hero_${lang}`,
+    {
+      username: req.session.user ? req.session.user.username : undefined,
+      lang: res.locals.lang,
+      t: res.locals.t
+    }
+  );
 });
 
 app.get("/dashboard", (req, res) => {

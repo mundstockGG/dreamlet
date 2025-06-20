@@ -14,7 +14,7 @@ interface NewsItem {
 }
 
 const router = Router();
-const mdDir = path.join(process.cwd(), 'public', 'markdown');
+const mdDir = path.join(process.cwd(), 'public', 'markdown', 'entry');
 
 
 function getAllMarkdownFiles(dir: string): string[] {

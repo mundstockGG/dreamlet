@@ -48,23 +48,16 @@ export async function joinEnvironment(req: Request, res: Response) {
 export async function postCreateEnvironment(req: Request, res: Response) {
   const userId   = req.session.user!.id;
   const { name, is_nsfw, difficulty, tags } = req.body;
-  console.log('[DEBUG] postCreateEnvironment called');
-  console.log('[DEBUG] userId:', userId);
-  console.log('[DEBUG] name:', name);
-  console.log('[DEBUG] is_nsfw:', is_nsfw);
-  console.log('[DEBUG] difficulty:', difficulty);
-  console.log('[DEBUG] tags:', tags);
   try {
     await envService.createEnvironment({
       ownerId: userId,
       name,
       isNSFW: Boolean(is_nsfw),
       difficulty,
-      tags: (tags as string).split(',').map(t=>t.trim()).filter(Boolean)
+      tags: (tags as string).split(',').map(t => t.trim()).filter(Boolean)
     });
     req.flash('success','Environment created');
   } catch (err: any) {
-    console.error('[DEBUG] Error in postCreateEnvironment:', err);
     req.flash('error', err.message);
   }
   res.redirect('/environments');
@@ -85,7 +78,7 @@ export async function leaveEnvironment(req: Request, res: Response) {
 export async function getManageEnvironment(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
-  const env     = await envService.getEnvironmentById(envId);
+  const env    = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
 
   if (env.ownerId !== userId) return res.redirect('/environments');
@@ -142,7 +135,7 @@ export async function postChatMessage(req: Request, res: Response) {
   const envId  = Number(req.params.id);
   const raw    = (req.body.message as string || '').trim();
 
-  let type: 'chat'|'action'         = 'chat';
+  let type: 'chat'|'action'          = 'chat';
   let actionType: 'me'|'do'|'rr'|null = null;
   let content = raw;
 
@@ -154,9 +147,9 @@ export async function postChatMessage(req: Request, res: Response) {
   }
 
   await ChatService.saveMessage({
+    actorId:       userId,
     environmentId: envId,
     placeId:       undefined,
-    userId,
     content,
     type,
     actionType
@@ -170,16 +163,17 @@ export async function toggleEnvironmentLock(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const env    = await envService.getEnvironmentById(envId);
   if (!env || env.ownerId !== userId) return res.status(403).send('Unauthorized');
-  await envService.updateLockState(envId, !env.isLocked);
+
+  await envService.updateLockState(envId, userId, !env.isLocked);
   res.redirect(`/environments/${envId}`);
 }
+
 export async function promoteUser(req: Request, res: Response) {
   const envId    = Number(req.params.id);
   const ownerId  = req.session.user!.id;
   const memberId = Number(req.params.memberId);
-  const env      = await envService.getEnvironmentById(envId);
-  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
-  await envService.promoteMember(envId, memberId);
+
+  await envService.promoteMember(envId, ownerId, memberId);
   res.redirect(`/environments/${envId}`);
 }
 
@@ -187,9 +181,8 @@ export async function kickUser(req: Request, res: Response) {
   const envId    = Number(req.params.id);
   const ownerId  = req.session.user!.id;
   const memberId = Number(req.params.memberId);
-  const env      = await envService.getEnvironmentById(envId);
-  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
-  await envService.kickMember(envId, memberId);
+
+  await envService.kickMember(envId, ownerId, memberId);
   res.redirect(`/environments/${envId}`);
 }
 
@@ -197,9 +190,8 @@ export async function banUser(req: Request, res: Response) {
   const envId    = Number(req.params.id);
   const ownerId  = req.session.user!.id;
   const memberId = Number(req.params.memberId);
-  const env      = await envService.getEnvironmentById(envId);
-  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
-  await envService.banMember(envId, memberId);
+
+  await envService.banMember(envId, ownerId, memberId);
   res.redirect(`/environments/${envId}`);
 }
 
@@ -207,21 +199,26 @@ export async function muteUser(req: Request, res: Response) {
   const envId    = Number(req.params.id);
   const ownerId  = req.session.user!.id;
   const memberId = Number(req.params.memberId);
-  const env      = await envService.getEnvironmentById(envId);
-  if (!env || env.ownerId !== ownerId) return res.status(403).send('Unauthorized');
-  await envService.toggleMuteMember(envId, memberId);
+
+  await envService.toggleMuteMember(envId, ownerId, memberId);
   res.redirect(`/environments/${envId}`);
 }
 
 export async function postCreatePlace(req: Request, res: Response) {
   const userId = req.session.user!.id;
-  const envId = Number(req.params.id);
+  const envId  = Number(req.params.id);
   const { name, emoji, parentId } = req.body;
 
   try {
     const role = await envService.getMemberRole(userId, envId);
     if (role !== 'owner' && role !== 'moderator') throw new Error('Unauthorized');
-    await placeService.createPlace(envId, name, emoji, parentId ? Number(parentId) : null);
+    await placeService.createPlace(
+      envId,
+      userId,
+      String(name),
+      String(emoji),
+      parentId ? Number(parentId) : null
+    );
     req.flash('success', 'Place created');
   } catch (err: any) {
     req.flash('error', err.message);
@@ -241,15 +238,15 @@ export async function getEnvironmentDetail(req: Request, res: Response) {
     success: req.flash('success'),
     username: req.session.user?.username,
     members,
-    places: await placeService.getPlaces(envId),
+    places:   await placeService.getPlaces(envId),
     messages: await ChatService.getRecentMessages(envId),
   });
 }
 
 export async function deleteEnvironmentAuth(req: Request, res: Response) {
-  const userId       = req.session.user!.id;
-  const envId        = Number(req.params.id);
-  const { confirm }  = req.body;
+  const userId      = req.session.user!.id;
+  const envId       = Number(req.params.id);
+  const { confirm } = req.body;
 
   const env = await envService.getEnvironmentById(envId);
   if (!env) {
@@ -260,13 +257,12 @@ export async function deleteEnvironmentAuth(req: Request, res: Response) {
     req.flash('error', 'Only the owner can delete this environment.');
     return res.redirect(`/environments/${envId}`);
   }
-
   if (confirm.trim() !== env.name) {
     req.flash('error', 'Name does not match. Deletion cancelled.');
     return res.redirect(`/environments/${envId}`);
   }
 
-  await envService.deleteEnvironment(envId);
+  await envService.deleteEnvironment(envId, userId);
   req.flash('success', `Environment “${env.name}” deleted.`);
   res.redirect('/environments');
 }

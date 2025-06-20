@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { ChatService } from '../services/chat.service';
 
-export async function postChatMessage(req: Request, res: Response, next: Function) {
+export async function postChatMessage(
+  req: Request,
+  res: Response,
+  next: Function
+) {
   try {
     const user        = req.session.user;
     const environment = Number(req.params.envId);
@@ -12,23 +16,23 @@ export async function postChatMessage(req: Request, res: Response, next: Functio
       return res.status(400).json({ error: 'Missing user or message' });
     }
 
-    let type: 'chat'|'action' = 'chat';
-    let actionType: 'me'|'do'|'rr'|null = null;
+    let type: 'chat' | 'action' = 'chat';
+    let actionType: 'me' | 'do' | 'rr' | null = null;
     let content = message;
 
     const slash = message.match(/^\/(me|do|rr)\s+(.+)$/i);
     if (slash) {
       type = 'action';
-      actionType = slash[1].toLowerCase() as 'me'|'do'|'rr';
+      actionType = slash[1].toLowerCase() as 'me' | 'do' | 'rr';
       content = slash[2].trim();
     }
 
-    console.log('POST chat:', { raw:req.body.message, type, actionType, content });
+    console.log('POST chat:', { raw: req.body.message, type, actionType, content });
 
     await ChatService.saveMessage({
+      actorId:       user.id,
       environmentId: environment,
       placeId:       place,
-      userId:        user.id,
       content,
       type,
       actionType
@@ -40,7 +44,11 @@ export async function postChatMessage(req: Request, res: Response, next: Functio
   }
 }
 
-export async function getChatPage(req: Request, res: Response, next: Function) {
+export async function getChatPage(
+  req: Request,
+  res: Response,
+  next: Function
+) {
   try {
     const user        = req.session.user;
     const environment = Number(req.params.envId);

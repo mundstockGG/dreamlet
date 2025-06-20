@@ -42,7 +42,12 @@ export async function postPlaceMessage(req: Request, res: Response, next: Functi
   const content = (req.body.message as string || '').trim();
 
   try {
-    await placeService.createPlaceMessage(envId, placeId, userId, content);
+    await placeService.createPlaceMessage(
+      envId,
+      placeId,
+      userId,
+      content
+    );
     res.redirect(`/environments/${envId}/places/${placeId}`);
   } catch (err: any) {
     req.flash('error', err.message);
@@ -100,8 +105,9 @@ export async function postEditPlace(req: Request, res: Response, next: Function)
 
     await placeService.updatePlace(
       placeId,
-      name,
-      emoji,
+      userId,
+      String(name),
+      String(emoji),
       parentId ? Number(parentId) : null
     );
     req.flash('success', 'Place updated');
@@ -125,7 +131,11 @@ export async function postTogglePlaceLock(req: Request, res: Response, next: Fun
     const role = await envService.getMemberRole(userId, envId);
     if (role !== 'owner' && role !== 'moderator') throw new Error('Unauthorized');
 
-    await placeService.updatePlaceLock(placeId, !place.isLocked);
+    await placeService.updatePlaceLock(
+      placeId,
+      userId,
+      !place.isLocked
+    );
     req.flash('success', 'Place lock toggled');
     res.redirect(`/environments/${envId}`);
   } catch (err: any) {
@@ -148,11 +158,14 @@ export async function deletePlace(req: Request, res: Response, next: Function) {
     }
 
     const place = await placeService.getPlaceById(placeId);
-    if (place?.name === 'Lobby') {
+    if (place?.name.toLowerCase() === 'lobby') {
       throw new Error('Cannot delete the Lobby');
     }
 
-    await placeService.deletePlace(placeId);
+    await placeService.deletePlace(
+      placeId,
+      userId
+    );
     req.flash('success', 'Place deleted');
     res.redirect(`/environments/${envId}`);
   } catch (err: any) {

@@ -6,6 +6,7 @@
         <p class="text-danger text-center"><%= error %></p>
         <% } %>
         <form action="/register" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="mb-3">
                 <label for="username" class="form-label"><%= t.register.form.username %></label>
                 <input type="text" class="form-control" id="username" name="username" required>

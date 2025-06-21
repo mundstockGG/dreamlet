@@ -102,6 +102,7 @@
           <p class="text-danger"><%= error %></p>
           <% } %>
           <form action="/environments/<%= env.id %>/places" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="mb-3">
               <label for="place-name" class="form-label"><%= t.environment.name %></label>
               <input type="text" class="form-control" id="place-name" name="name" required>

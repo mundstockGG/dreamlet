@@ -76,6 +76,7 @@
           <% } %>
           <form action="/environments/create" method="POST">
             <div class="mb-3">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <label for="envName" class="form-label"><%= t.environments.name %></label>
               <input type="text" class="form-control bg-secondary text-light border-0" id="envName" name="name" required>
             </div>

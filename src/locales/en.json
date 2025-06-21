@@ -173,6 +173,9 @@
         "top_level": "— Top level —",
         "close": "Close",
         "back": "Back to Environments",
-        "delete_env": "Eliminar entorno"
+        "delete_env": "Delete Environment",
+        "confirm_delete_env": "Type environment name to confirm deletion",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
     }
 }

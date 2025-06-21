@@ -177,6 +177,9 @@
         "top_level": "— Nivel superior —",
         "close": "Cerrar",
         "back": "Volver a entornos",
-        "delete_env": "Eliminar entorno"
+        "delete_env": "Eliminar entorno",
+        "confirm_delete_env": "Escribe el nombre del entorno para confirmar eliminación",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar"
     }
 }

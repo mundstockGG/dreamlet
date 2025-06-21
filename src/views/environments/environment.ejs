@@ -121,8 +121,8 @@
               <label for="parentId" class="form-label"><%= t.environment.parent %></label>
               <select class="form-select" name="parentId">
                 <option value="" selected><%= t.environment.top_level %></option>
-                <% places.forEach(p => { %>
-                <option value="<%= p.id %>"><%= p.name %></option>
+                <% parentPlaces.forEach(p => { %>
+                  <option value="<%= p.id %>"><%= p.name %></option>
                 <% }) %>
               </select>
             </div>

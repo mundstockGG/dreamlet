@@ -1,15 +1,27 @@
 <%- include('../partials/header', { title: env.name, username, lang, t }) %>
 <div class="container page-content">
+  <% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+  <% if (success) { %>
+  <div class="alert alert-success"><%= success %></div>
+  <% } %>
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0">
       <%= env.name %>
       <% if (env.isNSFW) { %>
-      <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="NSFW: This environment is not safe for work.\nIt is intended for adults and may contain mature, explicit, or sensitive content.\nPlease join only if you are of legal age and comfortable with adult themes."></i>
+      <i class="bi bi-fire text-danger ms-1" style="cursor:pointer;" data-bs-toggle="tooltip" title="NSFW: This environment is not safe for work.
+It is intended for adults and may contain mature, explicit, or sensitive content.
+Please join only if you are of legal age and comfortable with adult themes."></i>
       <% } else { %>
-      <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="SFW: This environment is safe for work.\nOnly general, non-explicit, and family-friendly roleplay is allowed.\nMature or adult content is strictly prohibited."></i>
+      <i class="bi bi-globe-americas ms-1" style="color:#FCFCFC; cursor:pointer;" data-bs-toggle="tooltip" title="SFW: This environment is safe for work.
+Only general, non-explicit, and family-friendly roleplay is allowed.
+Mature or adult content is strictly prohibited."></i>
       <% } %>
     </h4>
     <form action="/environments/<%= env.id %>/lock" method="POST" class="ms-3 d-flex align-items-center">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label class="form-check form-switch mb-0" title="<%= t.environment.lock %>">
         <input class="form-check-input" type="checkbox" name="isLocked" onchange="this.form.submit()" <%= env.isLocked ? 'checked' : '' %>>
         <span class="ms-2"><%= t.environment.lock %></span>
@@ -19,8 +31,14 @@
 
   <div class="card mb-3">
     <div class="card-body">
-      <p class="text-secondary small"><%= t.environment.invite_code %>: <strong><%= env.inviteCode || '— none —' %></strong></p>
-      <p class="text-secondary small"><%= t.environment.locked %>: <strong><%= env.isLocked ? t.environment.yes : t.environment.no %></strong></p>
+      <p class="text-secondary small">
+        <%= t.environment.invite_code %>:
+        <strong><%= env.inviteCode || '— none —' %></strong>
+      </p>
+      <p class="text-secondary small">
+        <%= t.environment.locked %>:
+        <strong><%= env.isLocked ? t.environment.yes : t.environment.no %></strong>
+      </p>
     </div>
   </div>
 
@@ -30,22 +48,25 @@
       <ul class="list-group">
         <% members.forEach(m => { %>
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span><%= m.username %> <em>(<%= t.environment.role %>: <%= m.role %>)</em></span>
+          <span>
+            <%= m.username %>
+            <em>(<%= t.environment.role %>: <%= m.role %>)</em>
+          </span>
           <% if (env.isOwner && m.role === 'member') { %>
           <span>
             <form action="/environments/<%= env.id %>/members/<%= m.id %>/kick" method="POST" style="display:inline; margin-right:0.25rem;">
               <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.kick %>" onclick="return confirm('<%= t.environment.kick %> <%= m.username %>?');">
-                View
+                <%= t.environment.kick %>
               </button>
             </form>
             <form action="/environments/<%= env.id %>/members/<%= m.id %>/ban" method="POST" style="display:inline; margin-right:0.25rem;">
               <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.ban %>" onclick="return confirm('<%= t.environment.ban %> <%= m.username %>?');">
-                Edit
+                <%= t.environment.ban %>
               </button>
             </form>
             <form action="/environments/<%= env.id %>/members/<%= m.id %>/mute" method="POST" style="display:inline;">
               <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.mute %>" onclick="return confirm('<%= t.environment.mute %> <%= m.username %>?');">
-                Delete
+                <%= t.environment.mute %>
               </button>
             </form>
           </span>
@@ -66,18 +87,22 @@
         <% places.forEach(p => { %>
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <span>
-            <%= p.emoji %> <%= p.name %> <% if (p.parentName) { %><small>in <%= p.parentName %></small><% } %>
+            <%= p.emoji %> <%= p.name %>
+            <% if (p.parentName) { %>
+            <small>in <%= p.parentName %></small>
+            <% } %>
           </span>
           <span>
             <% if (p.id !== env.id) { %>
-              <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="<%= t.environment.edit %>">
-                <%= t.environment.edit %>
-              </a>
-              <form action="/environments/<%= env.id %>/places/<%= p.id %>/delete" method="POST" style="display:inline; margin:0;">
-                <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.delete %>" onclick="return confirm('Are you sure you want to delete this place?');">
-                  <%= t.environment.delete %>
-                </button>
-              </form>
+            <a href="/environments/<%= env.id %>/places/<%= p.id %>/edit" class="btn btn-sm btn-place-action" title="<%= t.environment.edit %>">
+              <%= t.environment.edit %>
+            </a>
+            <form action="/environments/<%= env.id %>/places/<%= p.id %>/delete" method="POST" style="display:inline; margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-sm btn-place-action" title="<%= t.environment.delete %>" onclick="return confirm('<%= t.environment.delete %>?');">
+                <%= t.environment.delete %>
+              </button>
+            </form>
             <% } %>
           </span>
         </li>
@@ -90,6 +115,7 @@
     </div>
   </div>
 
+  <!-- Create Place Modal -->
   <div class="modal fade" id="createPlaceModal" tabindex="-1" aria-labelledby="createPlaceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -122,57 +148,82 @@
               <select class="form-select" name="parentId">
                 <option value="" selected><%= t.environment.top_level %></option>
                 <% parentPlaces.forEach(p => { %>
-                  <option value="<%= p.id %>"><%= p.name %></option>
+                <option value="<%= p.id %>"><%= p.name %></option>
                 <% }) %>
               </select>
             </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= t.environment.close %></button>
-          <button type="submit" class="btn btn-primary" style="background-color:#FCFCFC; border-color:#FCFCFC; color:#0f1012;"><%= t.environment.create_place %></button>
+          <button type="submit" class="btn btn-primary" style="background-color:#FCFCFC; border-color:#FCFCFC; color:#0f1012;">
+            <%= t.environment.create_place %>
+          </button>
         </div>
+        </form>
       </div>
     </div>
   </div>
 
+  <!-- Delete Environment Button -->
   <div class="d-flex justify-content-end">
     <a href="/environments" class="btn btn-secondary mt-4 mb-3">
       <i class="bi bi-arrow-left me-1"></i><%= t.environment.back %>
     </a>
-    <form id="delete-env-form" action="/environments/<%= env.id %>/delete" method="POST" class="d-inline-block ms-2">
-      <button type="button" class="btn btn-danger mt-4 mb-3 ms-2" onclick="showDeleteEnvPrompt()">
-        <i class="bi bi-trash me-1"></i><%= t.environment.delete_environment %>
-      </button>
-      <div id="delete-env-prompt" style="display:none; margin-top:10px;">
-        <p><%= t.environment.confirm_delete_env %> <strong><%= env.name %></strong></p>
-        <input type="text" class="form-control mb-2" id="delete-env-confirm" placeholder="Type environment name to confirm">
-        <button type="submit" class="btn btn-danger" id="delete-env-confirm-btn" disabled><%= t.environment.confirm %></button>
-        <button type="button" class="btn btn-secondary ms-2" onclick="hideDeleteEnvPrompt()"><%= t.environment.cancel %></button>
-      </div>
-    </form>
+    <button type="button" class="btn btn-danger mt-4 mb-3 ms-2" data-bs-toggle="modal" data-bs-target="#deleteEnvModal">
+      <i class="bi bi-trash me-1"></i><%= t.environment.delete_environment %>
+    </button>
   </div>
 </div>
+
+<!-- Delete Environment Modal -->
+<div class="modal fade" id="deleteEnvModal" tabindex="-1" aria-labelledby="deleteEnvModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-light">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteEnvModalLabel"><%= t.environment.delete_environment %></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="<%= t.environment.close %>"></button>
+      </div>
+      <div class="modal-body">
+        <% if (error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+        <form id="delete-env-form" action="/environments/<%= env.id %>/delete" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <p><%= t.environment.confirm_delete_env %> <strong><%= env.name %></strong></p>
+          <input type="text" id="delete-env-input" class="form-control mb-3" placeholder="<%= t.environment.type_name %>">
+          <input type="hidden" name="confirm" id="delete-env-confirm">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= t.environment.cancel %></button>
+        <button type="submit" form="delete-env-form" class="btn btn-danger" id="delete-env-btn" disabled>
+          <%= t.environment.confirm %>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <%- include('../partials/footer') %>
 <script src="https://unpkg.com/emoji-mart@latest/dist/browser.js"></script>
 <script>
   const btn = document.getElementById('emoji-picker-btn');
-  const input = document.getElementById('place-emoji');
+  const inputEmoji = document.getElementById('place-emoji');
   const container = document.getElementById('emoji-picker-container');
-  let pickerVisible = false;
-  let picker;
-
+  let pickerVisible = false,
+    picker;
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     if (!pickerVisible) {
       picker = new window.EmojiMart.Picker({
-        onEmojiSelect: (emoji) => {
-          input.value = emoji.native;
+        onEmojiSelect: emoji => {
+          inputEmoji.value = emoji.native;
           container.innerHTML = '';
           container.style.display = 'none';
           pickerVisible = false;
         },
         theme: 'light',
-        previewPosition: 'none',
+        previewPosition: 'none'
       });
       container.innerHTML = '';
       container.appendChild(picker);
@@ -184,7 +235,7 @@
       pickerVisible = false;
     }
   });
-  window.addEventListener('mousedown', function(e) {
+  window.addEventListener('mousedown', e => {
     if (pickerVisible && !container.contains(e.target) && e.target !== btn) {
       container.innerHTML = '';
       container.style.display = 'none';
@@ -193,22 +244,15 @@
   });
 </script>
 <script>
-    var envName = "<%= env.name %>"; // Corrected syntax for embedding environment name
-    function showDeleteEnvPrompt() {
-      document.getElementById('delete-env-prompt').style.display = '';
-    }
-    function hideDeleteEnvPrompt() {
-      document.getElementById('delete-env-prompt').style.display = 'none';
-      document.getElementById('delete-env-confirm').value = '';
-      document.getElementById('delete-env-confirm-btn').disabled = true;
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      var input = document.getElementById('delete-env-confirm');
-      var btn = document.getElementById('delete-env-confirm-btn');
-      if (input && btn) {
-        input.addEventListener('input', function() {
-          btn.disabled = (input.value !== envName);
-        });
-      }
+  const envName = "<%= env.name.replace(/"/g,'\\"') %>";
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('delete-env-input');
+    const hidden = document.getElementById('delete-env-confirm');
+    const btnDelete = document.getElementById('delete-env-btn');
+    input.addEventListener('input', () => {
+      const ok = input.value.trim() === envName;
+      btnDelete.disabled = !ok;
+      hidden.value = ok ? envName : '';
     });
-  </script>
+  });
+</script>

@@ -241,17 +241,22 @@ export async function getEnvironmentDetail(req: Request, res: Response) {
   const parentPlaces  = places.filter(p => p.name !== 'Lobby');
   const messages      = await ChatService.getRecentMessages(envId);
 
+  const errorArr   = req.flash('error');
+  const successArr = req.flash('success');
+
   res.render('environments/environment', {
-    env:       environment,
-    error:     req.flash('error'),
-    success:   req.flash('success'),
-    username:  req.session.user?.username,
-    t:         res.locals.t,
-    lang:      res.locals.lang,
+    title:        environment.name,
+    username:     req.session.user?.username,
+    lang:         res.locals.lang,
+    t:            res.locals.t,
+    csrfToken:    req.csrfToken(),
+    env:          environment,
     members,
     places,
     parentPlaces,
     messages,
+    error:        errorArr[0]   || null,
+    success:      successArr[0] || null
   });
 }
 

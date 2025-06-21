@@ -80,35 +80,33 @@ export async function getManageEnvironment(req: Request, res: Response) {
   const envId  = Number(req.params.id);
   const env    = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
-
   if (env.ownerId !== userId) return res.redirect('/environments');
-
   const isMember = await envService.getMemberRole(userId, envId);
   if (!isMember) return res.redirect('/environments');
 
-  const [members, places] = await Promise.all([
-    envService.getMembers(envId),
-    placeService.getPlaces(envId)
-  ]);
+  const allPlaces    = await placeService.getPlaces(envId);
+  const parentPlaces = allPlaces.filter(p => p.name !== '☁️ Lobby');
+
+  const members = await envService.getMembers(envId);
 
   res.render('environments/environment', {
-    title: `Manage: ${env.name}`,
-    username: req.session.user!.username,
+    title:       `Manage: ${env.name}`,
+    username:    req.session.user!.username,
     env,
     environment: env,
     members,
-    places,
-    error: null,
-    t: res.locals.t,
-    lang: res.locals.lang
+    places:      allPlaces,
+    parentPlaces,
+    error:       null,
+    t:           res.locals.t,
+    lang:        res.locals.lang
   });
 }
 
 export async function getChat(req: Request, res: Response) {
   const userId = req.session.user!.id;
   const envId  = Number(req.params.id);
-
-  const env = await envService.getEnvironmentById(envId);
+  const env    = await envService.getEnvironmentById(envId);
   if (!env) return res.redirect('/environments');
   const role = await envService.getMemberRole(userId, envId);
   if (!role) return res.redirect('/environments');
@@ -121,7 +119,7 @@ export async function getChat(req: Request, res: Response) {
 
   res.render('environment/chat', {
     title: `${env.name} · Lobby`,
-    username: req.session.user!.username,
+    username:      req.session.user!.username,
     env,
     members,
     places,
@@ -212,6 +210,13 @@ export async function postCreatePlace(req: Request, res: Response) {
   try {
     const role = await envService.getMemberRole(userId, envId);
     if (role !== 'owner' && role !== 'moderator') throw new Error('Unauthorized');
+
+    const allPlaces = await placeService.getPlaces(envId);
+    const lobby = allPlaces.find(p => p.name === 'Lobby');
+    if (lobby && Number(parentId) === lobby.id) {
+      throw new Error('Cannot create sub-places under the Lobby');
+    }
+
     await placeService.createPlace(
       envId,
       userId,
@@ -231,15 +236,22 @@ export async function getEnvironmentDetail(req: Request, res: Response) {
   const environment = await envService.getEnvironmentById(envId);
   if (!environment) return res.status(404).render('404');
 
-  const members = await envService.getMembers(envId);
+  const members       = await envService.getMembers(envId);
+  const places        = await placeService.getPlaces(envId);
+  const parentPlaces  = places.filter(p => p.name !== 'Lobby');
+  const messages      = await ChatService.getRecentMessages(envId);
+
   res.render('environments/environment', {
-    env: environment,
-    error: req.flash('error'),
-    success: req.flash('success'),
-    username: req.session.user?.username,
+    env:       environment,
+    error:     req.flash('error'),
+    success:   req.flash('success'),
+    username:  req.session.user?.username,
+    t:         res.locals.t,
+    lang:      res.locals.lang,
     members,
-    places:   await placeService.getPlaces(envId),
-    messages: await ChatService.getRecentMessages(envId),
+    places,
+    parentPlaces,
+    messages,
   });
 }
 

@@ -1,13 +1,16 @@
 import pool from '../models/db.model';
 import * as environmentService from './environment.service';
-import * as placeService from './place.service';
+import * as placeService       from './place.service';
 
 export interface SaveMessageOpts {
   environmentId: number;
   placeId?:      number;
   content:       string;
-  type:          'chat' | 'action';
+  type:          'chat' | 'action' | 'roll';
   actionType?:   'me' | 'do' | 'rr' | null;
+  diceType?:     string;
+  diceCount?:    number;
+  results?:      number[];
 }
 
 export class ChatService {
@@ -20,54 +23,44 @@ export class ChatService {
       actorId,
       content,
       type,
-      actionType
+      actionType,
+      diceType,
+      diceCount,
+      results
     } = opts;
 
-    const role = await environmentService.getMemberRole(actorId, environmentId);
-    if (!role) {
-      throw new Error('Unauthorized: you are not a member of this environment');
-    }
-
-    const [memberRows] = await pool.execute<any[]>(
+    const roleRows = await environmentService.getMemberRole(actorId, environmentId);
+    if (!roleRows) throw new Error('Unauthorized');
+    const [mRows] = await pool.execute<any[]>(
       `SELECT is_muted
          FROM environment_members
         WHERE user_id = ? AND environment_id = ?`,
       [actorId, environmentId]
     );
-    if (memberRows[0]?.is_muted) {
-      throw new Error('You have been muted in this environment');
-    }
+    if (mRows[0]?.is_muted) throw new Error('You are muted');
 
+    // place lock check
     if (placeId != null) {
       const place = await placeService.getPlaceById(placeId);
-      if (!place) {
-        throw new Error('Place not found');
-      }
-      if (place.isLocked && role === 'member') {
-        throw new Error('This place is locked. Only moderators/owners may post.');
-      }
+      if (!place) throw new Error('Place not found');
+      if (place.isLocked && roleRows === 'member')
+        throw new Error('This place is locked');
     }
-
-    console.log('[ChatService.saveMessage]', {
-      environmentId,
-      placeId,
-      actorId,
-      content,
-      type,
-      actionType
-    });
 
     await pool.query(
       `INSERT INTO messages
-         (environment_id, place_id, user_id, content, \`type\`, action_type)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+         (environment_id, place_id, user_id, content, \`type\`, action_type, dice_type, dice_count, results)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         environmentId,
         placeId ?? null,
         actorId,
         content,
         type,
-        actionType ?? null
+        actionType ?? null,
+        diceType ?? null,
+        diceCount ?? null,
+        results ? JSON.stringify(results) : null
       ]
     );
   }
@@ -81,6 +74,9 @@ export class ChatService {
               m.content,
               m.\`type\`,
               m.action_type,
+              m.dice_type,
+              m.dice_count,
+              m.results,
               m.created_at,
               u.username
          FROM messages m
@@ -92,12 +88,15 @@ export class ChatService {
       [environmentId, placeId ?? null, placeId ?? null]
     );
     return rows as Array<{
-      id: number;
-      username: string;
-      content: string;
-      type: 'chat' | 'action';
+      id:           number;
+      username:     string;
+      content:      string;
+      type:         'chat' | 'action' | 'roll';
       action_type?: 'me' | 'do' | 'rr' | null;
-      created_at: string;
+      dice_type?:   string;
+      dice_count?:  number;
+      results?:     string;
+      created_at:   string;
     }>;
   }
 }

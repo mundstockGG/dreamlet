@@ -1,33 +1,37 @@
 <%- include('../partials/header', { title, username }) %>
 
-<%- include('../partials/header', { title, username }) %>
-
 <div class="d-flex" style="height: calc(100vh - 64px);">
-  
-  <!-- 1️⃣ LEFT: Places List -->
+
   <nav class="border-end p-3 environment-chat-places d-flex flex-column" style="width:20%; overflow-y:auto; height:100%;">
     <h6>Places</h6>
     <ul class="list-group flex-grow-1">
-      <!-- Render lobby place at the top if it exists in places -->
-      <% const lobbyPlace = places && places.find(p => p.id === env.id); %>
+      <% const lobbyPlace = places.find(p => p.id === env.id); %>
       <% if (lobbyPlace) { %>
-        <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>" style="padding:0; position:relative;">
-          <a href="#" class="lobby-link text-decoration-none d-flex align-items-center w-100 h-100" data-place-id="<%= lobbyPlace.id %>" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
-            <%= lobbyPlace.emoji %> <%= lobbyPlace.name %>
-          </a>
-        </li>
+      <li class="list-group-item <%= !activePlaceId ? 'active' : '' %>" style="padding:0;">
+        <a href="#" class="lobby-link text-decoration-none d-flex align-items-center w-100 h-100"
+           data-place-id="<%= lobbyPlace.id %>"
+           style="padding:0.75rem 1.25rem; color:inherit;">
+          <%= lobbyPlace.emoji %> <%= lobbyPlace.name %>
+        </a>
+      </li>
       <% } %>
-      <% function renderPlaces(parentId, level) { %>
-        <% places.filter(p => (p.parentId || 0) === (parentId || 0) && p.id !== env.id).forEach(p => { %>
-          <li class="list-group-item place-tree-level-<%= level %> <%= activePlaceId===p.id ? 'active' : '' %>" data-parent-id="<%= p.parentId %>" style="padding:0; position:relative;">
-            <a href="#" class="place-link text-decoration-none d-flex align-items-center w-100 h-100" data-place-id="<%= p.id %>" style="padding:0.75rem 1.25rem; color:inherit; min-height:48px; width:100%; height:100%; position:relative; z-index:2;">
+      <% function renderPlaces(parentId,level) { %>
+        <% places
+            .filter(p => (p.parentId||0)===(parentId||0) && p.id!==env.id)
+            .forEach(p => { %>
+          <li class="list-group-item place-tree-level-<%= level %> <%= activePlaceId===p.id?'active':'' %>"
+              data-parent-id="<%= p.parentId %>"
+              style="padding:0;">
+            <a href="#" class="place-link text-decoration-none d-flex align-items-center w-100 h-100"
+               data-place-id="<%= p.id %>"
+               style="padding:0.75rem 1.25rem; color:inherit;">
               <%= p.emoji %> <%= p.name %>
             </a>
           </li>
-          <% renderPlaces(p.id, level+1); %>
+          <% renderPlaces(p.id, level+1) %>
         <% }) %>
       <% } %>
-      <% renderPlaces(null, 0); %>
+      <% renderPlaces(null,0) %>
     </ul>
     <div class="d-grid mt-3">
       <a href="/environments" class="btn btn-outline-danger">
@@ -36,14 +40,16 @@
     </div>
   </nav>
 
-  <!-- 2️⃣ CENTER: Chat History + Input -->
-  <main class="flex-grow-1 d-flex flex-column p-3 position-relative" style="overflow: hidden;">
-    <!-- Chat history -->
+  <main class="flex-grow-1 d-flex flex-column p-3 position-relative" style="overflow:hidden;">
     <div id="chat-history" class="flex-grow-1 overflow-auto mb-3">
       <% messages.forEach(msg => { %>
         <% if (msg.type === 'action') { %>
           <div class="mb-2 chat-action chat-<%= msg.action_type %>">
             *<%= msg.username %> <%= msg.content %>
+          </div>
+        <% } else if (msg.type === 'roll') { %>
+          <div class="mb-2 chat-roll">
+            🎲 <strong><%= msg.username %></strong> <%= msg.content %>
           </div>
         <% } else { %>
           <div class="mb-2 chat-normal">
@@ -53,15 +59,13 @@
       <% }) %>
     </div>
 
-    <!-- Typing indicator -->
     <span id="typing-indicator" class="small text-muted mb-2" style="display:none;"></span>
-    <!-- Slash command suggestions (moved inside input wrapper below) -->
-    <!-- Chat input and suggestions container -->
     <div class="chat-input-container position-relative w-100">
-      <form id="chat-form" class="d-flex w-100 align-items-center" style="position: relative;">
-        <div style="position:relative; flex:1;">
+      <form id="chat-form" class="d-flex w-100 align-items-center">
+        <div style="flex:1; position:relative;">
           <div id="slash-suggestions" class="slash-suggestions shadow-sm" style="display:none;"></div>
-          <input type="text" name="message" class="form-control" placeholder="Type your message…" required style="width:100%;" autocomplete="off">
+          <input type="text" name="message" class="form-control" placeholder="Type your message…"
+                 autocomplete="off" style="width:100%;" required>
         </div>
         <button class="btn btn-primary d-flex align-items-center ms-2" type="submit">
           <i class="bi bi-caret-right-fill me-1"></i><span>Send</span>
@@ -70,28 +74,64 @@
     </div>
   </main>
 
-  <!-- 3️⃣ RIGHT: Members List -->
-  <aside class="border-start p-3" style="width: 20%; overflow-y: auto;">
+  <aside class="border-start p-3" style="width:20%; overflow-y:auto;">
     <h6>Members</h6>
     <ul class="list-group">
       <% members.forEach(m => { %>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <%= m.username %>
-          <% if (m.role === 'owner') { %>
-            <span title="Owner" style="font-size:1.1em; color:#888; margin-left:0.5em; display:flex; align-items:center; justify-content:center; width:1.8em; height:1.2em;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="18" height="15" fill="currentColor" style="display:block; margin:auto;"><path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6l277.2 0c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z"/></svg>
-            </span>
-          <% } %>
-        </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <%= m.username %>
+        <% if (m.role === 'owner') { %>
+          <span title="Owner" style="font-size:1.1em; color:#888;">
+            <!-- SVG icon omitted -->
+          </span>
+        <% } %>
+      </li>
       <% }) %>
     </ul>
   </aside>
+</div>
 
+<!-- Roll Action Modal -->
+<div class="modal fade" id="diceModal" tabindex="-1" aria-labelledby="diceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="diceModalLabel">Roll Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="diceForm">
+          <div class="mb-3">
+            <label for="diceDesc" class="form-label">Action Description</label>
+            <input type="text" id="diceDesc" class="form-control" placeholder="e.g. search the chest" required>
+          </div>
+          <div class="mb-3">
+            <label for="diceType" class="form-label">Dice Type</label>
+            <select id="diceType" class="form-select">
+              <option value="d6">d6 (1–6)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="diceCount" class="form-label">How many?</label>
+            <input id="diceCount" type="number" class="form-control" value="1" min="1" max="10" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Roll</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  window.envId = '<%= env.id %>';
+  window.envId    = '<%= env.id %>';
   window.username = '<%= username %>';
 </script>
+
+<!-- 1) Load Bootstrap JS bundle so new bootstrap.Modal(...) works -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 2) Then load Socket.IO -->
 <script src="/socket.io/socket.io.js"></script>
+<!-- 3) Finally load our chat logic -->
 <script src="/js/chat.js"></script>
+
+<%- include('../partials/footer') %>
